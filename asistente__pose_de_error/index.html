@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduFlow - Asistente Virtual</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#206fee",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101722",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .speech-bubble {
+            position: relative;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid white;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-200">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-primary">EduFlow</h1>
+</div>
+<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-200">help</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-center p-6 space-y-8 max-w-md mx-auto w-full">
+<div class="relative w-full flex flex-col items-center">
+<!-- Character Image (Young blonde woman in apology/error pose) -->
+<div class="w-64 h-64 md:w-72 md:h-72 mb-6">
+<img alt="Asistente virtual rubia joven con gesto de disculpa" class="w-full h-full object-cover rounded-3xl shadow-xl border-4 border-white dark:border-slate-800" data-alt="Young blonde virtual assistant with an apologetic facial expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB09uXioZYLMYDXEZFhU3OBm2Z74WpMR1Rup9QjXcCkMBnAEp1A4uQk6pMjwQSz-YKbFE7COuIAXvs4WjjlDSjWhBXtU4tlFJlsJbIqDX8z3d6j9SX7iR0_QAU3sGJ0cxzep1JKAvkvPpsUH8jHC2tMUf05ACXSD6Luvm8eYHIjljgg4b2QyBuGlvA-PhIAC7ePPD_iet3_Nbam_6dPeZYGxr7I5VNnos_oPPYFkeJiZ8idFT6WLPHA7l9FAMi3I1bhF6l2yCs9zw"/>
+</div>
+<!-- Lateral Speech Bubble -->
+<div class="speech-bubble p-5 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+<div class="flex flex-col gap-1">
+<p class="text-lg font-semibold text-slate-800 dark:text-slate-100 leading-snug">
+                        ¡Vaya! Algo salió mal.
+                    </p>
+<p class="text-slate-600 dark:text-slate-400">
+                        ¿Podemos intentarlo de nuevo?
+                    </p>
+<p class="text-xs text-primary font-medium mt-1 uppercase tracking-wider">EduFlow Assistant</p>
+</div>
+</div>
+</div>
+<!-- Prominent Button below text -->
+<button class="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 active:scale-95">
+<span class="material-symbols-outlined">refresh</span>
+            Animar respuesta
+        </button>
+</main>
+<!-- Bottom Navigation / Chat Controls -->
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 pb-8">
+<div class="flex items-center gap-3 max-w-md mx-auto">
+<!-- Voice/Mic Button -->
+<button class="p-3 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+<!-- Chat Input Wrapper -->
+<div class="flex-1 relative">
+<input class="w-full py-3 px-4 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-slate-900 transition-all" placeholder="Escribe tu duda aquí..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+<!-- Standard Bottom Nav Icons (Simplified) -->
+<nav class="flex justify-around mt-6 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">house</span>
+<span class="text-[10px] font-medium">Inicio</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="text-[10px] font-medium">Chat</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">book_4</span>
+<span class="text-[10px] font-medium">Lecciones</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</a>
+</nav>
+</footer>
+
+<script src="/assistant-brain.js"></script>
+<script src="/assistant-core.js"></script>
+<script src="/navigation.js"></script>
+</body></html>

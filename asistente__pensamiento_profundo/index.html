@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#206fee",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101722",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<title>EduFlow - Pensando</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<!-- Main Container -->
+<div class="relative flex h-screen max-w-md mx-auto flex-col bg-white dark:bg-background-dark overflow-hidden shadow-2xl">
+<!-- Header -->
+<header class="flex items-center bg-white dark:bg-background-dark p-4 border-b border-slate-100 dark:border-slate-800 justify-between shrink-0">
+<div class="text-slate-900 dark:text-slate-100 flex size-10 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">EduFlow</h2>
+<div class="flex size-10 items-center justify-center">
+<button class="flex items-center justify-center rounded-lg text-slate-900 dark:text-slate-100">
+<span class="material-symbols-outlined text-2xl">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area (Scrollable) -->
+<main class="flex-1 overflow-y-auto relative flex flex-col">
+<!-- Avatar Section -->
+<div class="relative flex-1 min-h-[400px]">
+<!-- High-quality visual of the blonde woman avatar in thinking pose -->
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Young blonde woman with white skin in deep thinking pose with hand on temple" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAzwhPMjvXxQsHsN4KaGkHjCKhW6srLSVv4MvXjjWZ6u1gu2csDkbO9nvtBTA6a2JYUBYs74_itlmndESpdujHxA0n5tX-ge5rIOQkYr4U9lJDY54dmC2tYD0yFEyAjeTRCIxpw1Bj5ODJaYxIIsZ37a9-eSIRreOjSLOUZKWqkHe8a3eya48ZWxjnVPJBoIHfFYCbb6X42TqZ0yhhgqN0l7qLyiAnJUz_REgZ0fxpvEuk0AAPrN76r3fMcYTV4WyJLM6cK-lwbfg');">
+</div>
+<!-- Gradient Overlay for Text Contrast -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<!-- Thought Vignette / Speech Bubble Overlay -->
+<div class="absolute bottom-12 left-4 right-4">
+<div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm p-5 rounded-2xl rounded-bl-none shadow-xl border border-white/20">
+<p class="text-slate-900 dark:text-slate-100 text-lg font-medium leading-relaxed italic">
+                            "Mmm... déjame analizar esto con más profundidad..."
+                        </p>
+</div>
+</div>
+</div>
+<!-- Action Button Section -->
+<div class="px-6 py-6 flex flex-col gap-4 bg-white dark:bg-background-dark">
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-6 bg-primary text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined mr-2">auto_fix_high</span>
+<span class="truncate">Animar respuesta</span>
+</button>
+</div>
+<!-- Chat Input Area (Simulated consistency with SCREEN_11/22) -->
+<div class="px-4 pb-4 bg-white dark:bg-background-dark">
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-4 py-2 border border-slate-200 dark:border-slate-700">
+<button class="text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+</button>
+<div class="flex-1 text-slate-400 dark:text-slate-500 text-sm py-2">
+                        Escribe un mensaje...
+                    </div>
+<button class="text-primary">
+<span class="material-symbols-outlined text-xl">mic</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="flex border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-background-dark px-4 pb-6 pt-3 shrink-0">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-[26px]">home</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Inicio</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[26px] fill-[1]">chat_bubble</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Chat</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-[26px]">history</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Historial</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Perfil</p>
+</a>
+</nav>
+</div>
+
+<script src="/assistant-brain.js"></script>
+<script src="/assistant-core.js"></script>
+<script src="/navigation.js"></script>
+</body></html>
