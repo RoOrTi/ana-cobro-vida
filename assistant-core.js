@@ -128,10 +128,17 @@ class AssistantCore {
         if (!this.synth) return;
         this.synth.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        // Clean text for speech: remove markdown symbols like *, #, _ and excessive breaks
+        const cleanText = text
+            .replace(/[*#_~]/g, '') // Remove markdown symbols
+            .replace(/\n-/g, ', ')   // Convert list dashes to commas for natural flow
+            .replace(/\n+/g, ' ')    // Remove line breaks
+            .trim();
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.lang = 'es-ES';
-        utterance.rate = 0.95;
-        utterance.pitch = 1.1;
+        utterance.rate = 1;
+        utterance.pitch = 1.05;
 
         utterance.onstart = () => {
             if (this.anaCharacter) this.anaCharacter.startSpeaking();
