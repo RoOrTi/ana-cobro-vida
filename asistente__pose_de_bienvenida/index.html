@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 
-<html lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -30,79 +36,94 @@
             },
         }
     </script>
-<title>EduFlow Welcome</title>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
+    <title>EduFlow Welcome</title>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
-<!-- Main Container -->
-<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto bg-white dark:bg-background-dark shadow-2xl">
-<!-- Top Bar Navigation -->
-<header class="flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary text-3xl">grid_view</span>
-<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">EduFlow</h1>
-</div>
-<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-<span class="material-symbols-outlined">person_outline</span>
-</button>
-</header>
-<!-- Main Content Area -->
-<main class="relative flex flex-1 flex-col px-6 pt-4 pb-20 overflow-y-auto">
-<!-- Floating Speech Bubble (Viñeta Lateral) -->
-<div class="relative z-20 mb-8 animate-fade-in">
-<div class="relative bg-primary text-white p-6 rounded-2xl rounded-bl-none shadow-xl border-l-4 border-primary/20">
-<p class="text-lg font-medium leading-relaxed">
+    <!-- Main Container -->
+    <div
+        class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto bg-white dark:bg-background-dark shadow-2xl">
+        <!-- Top Bar Navigation -->
+        <header
+            class="flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-3xl">grid_view</span>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">EduFlow</h1>
+            </div>
+            <button
+                class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <span class="material-symbols-outlined">person_outline</span>
+            </button>
+        </header>
+        <!-- Main Content Area -->
+        <main class="relative flex flex-1 flex-col px-6 pt-4 pb-20 overflow-y-auto">
+            <!-- Floating Speech Bubble (Viñeta Lateral) -->
+            <div class="relative z-20 mb-8 animate-fade-in">
+                <div
+                    class="relative bg-primary text-white p-6 rounded-2xl rounded-bl-none shadow-xl border-l-4 border-primary/20">
+                    <p class="text-lg font-medium leading-relaxed">
                         ¡Hola! Qué alegría verte de nuevo. ¿Qué vamos a aprender hoy?
                     </p>
-<!-- Speech bubble tail -->
-<div class="absolute -bottom-4 left-0 w-8 h-4 bg-primary" style="clip-path: polygon(0 0, 0% 100%, 100% 0);"></div>
-</div>
-</div>
-<!-- Assistant Image Container -->
-<!-- The image is positioned as a medium shot, torso and arms visible -->
-<div class="flex-1 relative flex items-end justify-center">
-<div class="relative w-full h-full max-h-[500px] overflow-hidden rounded-2xl">
-<img alt="Friendly blonde female assistant in professional attire with a welcoming gesture" class="w-full h-full object-cover object-top drop-shadow-2xl" data-alt="Friendly blonde professional assistant smiling with open hands welcoming gesture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRwYe5PnYL3IxpaXDCR3D8NKOWSVWnDngSJ8k5_C2D9ku5zWryYtUQX92-iSwfLK8PAuC_-WrckMI_qmxjaOhbOdjzj-XjmTcA5UgzSS5E5L6nsyDPC3lRVMF_1ZT004JEZ1SlX6OFoi_OhUVHGqk9NWHwziHg8u0yPmpkoMvWNztoOTXvYdDmDyy9hBFvWfPq-DGBryJaQaP6Dwgjw6Jboh7xOym6InxnjK_bcY9Q714aQqZ4EiSgqB1jRTl0fse29nhNUnShag"/>
-<!-- Subtle Gradient overlay to ensure text/UI visibility if needed -->
-<div class="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent"></div>
-</div>
-</div>
-</main>
-<!-- Fixed Bottom Action Area -->
-<footer class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white dark:from-background-dark via-white/95 dark:via-background-dark/95 to-transparent">
-<div class="flex flex-col gap-4">
-<button class="flex w-full items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg active:scale-[0.98]">
-<span class="material-symbols-outlined">auto_fix_high</span>
-<span class="text-lg">Animar respuesta</span>
-</button>
-</div>
-</footer>
-<!-- Bottom Navigation Bar (Secondary) -->
-<div class="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-background-dark px-6 pb-2 pt-2 flex justify-between items-center">
-<a class="flex flex-col items-center gap-1 p-2 text-primary" href="#">
-<span class="material-symbols-outlined fill-1">home</span>
-<span class="text-[10px] font-semibold uppercase tracking-wider">Inicio</span>
-</a>
-<a class="flex flex-col items-center gap-1 p-2 text-slate-400 dark:text-slate-500" href="#">
-<span class="material-symbols-outlined">menu_book</span>
-<span class="text-[10px] font-semibold uppercase tracking-wider">Lecciones</span>
-</a>
-<a class="flex flex-col items-center gap-1 p-2 text-slate-400 dark:text-slate-500" href="#">
-<span class="material-symbols-outlined">trending_up</span>
-<span class="text-[10px] font-semibold uppercase tracking-wider">Progreso</span>
-</a>
-<a class="flex flex-col items-center gap-1 p-2 text-slate-400 dark:text-slate-500" href="#">
-<span class="material-symbols-outlined">settings</span>
-<span class="text-[10px] font-semibold uppercase tracking-wider">Ajustes</span>
-</a>
-</div>
-</div>
+                    <!-- Speech bubble tail -->
+                    <div class="absolute -bottom-4 left-0 w-8 h-4 bg-primary"
+                        style="clip-path: polygon(0 0, 0% 100%, 100% 0);"></div>
+                </div>
+            </div>
+            <!-- Assistant Image Container -->
+            <!-- The image is positioned as a medium shot, torso and arms visible -->
+            <div class="flex-1 relative flex items-end justify-center">
+                <div class="relative w-full h-full max-h-[500px] overflow-hidden rounded-2xl">
+                    <img alt="Friendly blonde female assistant in professional attire with a welcoming gesture"
+                        class="w-full h-full object-cover object-top drop-shadow-2xl"
+                        data-alt="Friendly blonde professional assistant smiling with open hands welcoming gesture"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRwYe5PnYL3IxpaXDCR3D8NKOWSVWnDngSJ8k5_C2D9ku5zWryYtUQX92-iSwfLK8PAuC_-WrckMI_qmxjaOhbOdjzj-XjmTcA5UgzSS5E5L6nsyDPC3lRVMF_1ZT004JEZ1SlX6OFoi_OhUVHGqk9NWHwziHg8u0yPmpkoMvWNztoOTXvYdDmDyy9hBFvWfPq-DGBryJaQaP6Dwgjw6Jboh7xOym6InxnjK_bcY9Q714aQqZ4EiSgqB1jRTl0fse29nhNUnShag" />
+                    <!-- Subtle Gradient overlay to ensure text/UI visibility if needed -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent"></div>
+                </div>
+            </div>
+        </main>
+        <!-- Fixed Bottom Action Area -->
+        <footer
+            class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white dark:from-background-dark via-white/95 dark:via-background-dark/95 to-transparent">
+            <div class="flex flex-col gap-4">
+                <button
+                    class="flex w-full items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg active:scale-[0.98]">
+                    <span class="material-symbols-outlined">auto_fix_high</span>
+                    <span class="text-lg">Animar respuesta</span>
+                </button>
+            </div>
+        </footer>
+        <!-- Bottom Navigation Bar (Secondary) -->
+        <div
+            class="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-background-dark px-6 pb-2 pt-2 flex justify-between items-center">
+            <a class="flex flex-col items-center gap-1 p-2 text-primary" href="#">
+                <span class="material-symbols-outlined fill-1">home</span>
+                <span class="text-[10px] font-semibold uppercase tracking-wider">Inicio</span>
+            </a>
+            <a class="flex flex-col items-center gap-1 p-2 text-slate-400 dark:text-slate-500" href="#">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span class="text-[10px] font-semibold uppercase tracking-wider">Lecciones</span>
+            </a>
+            <a class="flex flex-col items-center gap-1 p-2 text-slate-400 dark:text-slate-500" href="#">
+                <span class="material-symbols-outlined">trending_up</span>
+                <span class="text-[10px] font-semibold uppercase tracking-wider">Progreso</span>
+            </a>
+            <a class="flex flex-col items-center gap-1 p-2 text-slate-400 dark:text-slate-500" href="#">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-[10px] font-semibold uppercase tracking-wider">Ajustes</span>
+            </a>
+        </div>
+    </div>
 
-<script src="/assistant-brain.js"></script>
-<script src="/assistant-core.js"></script>
-<script src="/navigation.js"></script>
-</body></html>
+    <script src="/ana-character.js"></script>
+    <script src="/assistant-brain.js"></script>
+    <script src="/assistant-core.js"></script>
+    <script src="/navigation.js"></script>
+</body>
+
+</html>

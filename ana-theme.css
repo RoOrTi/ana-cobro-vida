@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+    --ana-bg: #0a0a0f;
+    --ana-surface: #111118;
+    --ana-surface2: #16161f;
+    --ana-border: rgba(255, 255, 255, 0.07);
+    --ana-gold: #c9a96e;
+    --ana-gold-light: #e8d5a3;
+    --ana-text: #e8e8f0;
+    --ana-text-muted: #7070a0;
+    --ana-accent: #9b7fe8;
+    --ana-accent2: #e87fa3;
+    --ana-bubble: #1a1a2e;
+    --ana-user-bubble: #1e1630;
+    --ana-glow: rgba(201, 169, 110, 0.15);
+}
+
+.ana-speaking .bg-canvas {
+    filter: hue-rotate(10deg) brightness(1.1);
+}
+
+body.ana-premium {
+    background: var(--ana-bg);
+    color: var(--ana-text);
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* Character Style */
+.ana-avatar-container {
+    width: 320px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.avatar-wrap {
+    position: relative;
+    width: 280px;
+    height: 340px;
+    transform-origin: bottom center;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.avatar-aura {
+    position: absolute;
+    inset: -30px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, var(--ana-glow) 0%, transparent 70%);
+    animation: pulse-aura 3s ease-in-out infinite;
+}
+
+@keyframes pulse-aura {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+.avatar-ring {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50% 50% 45% 45%;
+    border: 1px solid rgba(201, 169, 110, 0.3);
+    animation: rotate-ring 20s linear infinite;
+}
+
+@keyframes rotate-ring {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.avatar-svg-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    border-radius: 50% 50% 45% 45%;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(201, 169, 110, 0.1);
+}
+
+.avatar-svg-wrap svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Voice Visualizer */
+.voice-viz {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 40px;
+    margin-top: 16px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.voice-viz.active {
+    opacity: 1;
+}
+
+.voice-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: var(--ana-gold);
+    animation: voice-wave 0.8s ease-in-out infinite alternate;
+    transform-origin: bottom;
+}
+
+@keyframes voice-wave {
+    from {
+        transform: scaleY(0.4);
+    }
+
+    to {
+        transform: scaleY(1);
+    }
+}
+
+/* Chat Bubbles */
+.ana-msg-bubble {
+    padding: 16px 20px;
+    border-radius: 4px 20px 20px 20px;
+    background: var(--ana-bubble);
+    border: 1px solid rgba(201, 169, 110, 0.15);
+    color: var(--ana-text);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    font-size: 15px;
+    line-height: 1.6;
+    font-family: 'DM Sans', sans-serif;
+    animation: bubble-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes bubble-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

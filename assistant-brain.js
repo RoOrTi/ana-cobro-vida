@@ -1,132 +1,80 @@
 /**
- * AssistantBrain.js - The "Brain" (Intelligence) of EduFlow Assistant
+ * AssistantBrain.js - The "Brain" (Intelligence) of Avatar Assistant
  * Powered by Gemini Intelligence with Screen Context
  */
 
 class AssistantBrain {
     constructor(core) {
         this.core = core;
-        this.context = {};
-        this.personality = {
-            role: "Experta en Finanzas",
-            style: "Profesional, directa, analítica y empoderadora",
-            goal: "Ayudar al usuario a dominar el mundo financiero y alcanzar sus metas económicas."
-        };
-        this.updateContext();
-        console.log('AssistantBrain: Intelligence initialized.');
-    }
-
-    getRealTime() {
-        const now = new Date();
-        return {
-            date: now.toLocaleDateString('es-ES'),
-            time: now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-            raw: now
-        };
-    }
-
-    updateContext() {
-        this.context = {
-            pageTitle: document.title,
-            header: document.querySelector('h1, h2')?.innerText || '',
-            content: Array.from(document.querySelectorAll('p, li')).map(el => el.innerText).join(' '),
-            path: window.location.pathname
+        this.knowledge = {
+            greeting: [
+                "¡Hola! Soy Ana, tu asistente virtual inteligente. Estoy aquí para ayudarte con lo que necesites. ¿En qué puedo asistirte hoy?",
+                "¡Bienvenido! Me llamo Ana y es un placer conocerte. Puedo ayudarte con conversación, preguntas, información y mucho más. ¿Qué te trae por aquí?",
+                "¡Hola! Qué bueno que estés aquí. Soy Ana, tu asistente personal. Cuéntame, ¿qué necesitas?",
+            ],
+            identity: [
+                "Soy Ana, una asistente virtual impulsada por inteligencia artificial. Fui creada para ofrecerte conversación natural, responder tus preguntas y ayudarte en lo que necesites. Me caracterizo por ser empática, inteligente y siempre dispuesta a aprender.",
+                "Me llamo Ana y soy tu asistente virtual. Combino procesamiento de lenguaje natural con una personalidad amigable para que nuestra comunicación sea lo más humana posible. ¡Pregúntame lo que quieras!",
+            ],
+            capabilities: [
+                "Puedo hacer muchas cosas por ti: responder preguntas, mantener conversaciones, contarte chistes, ayudarte a reflexionar, dar información sobre diversos temas, practicar idiomas, y mucho más. También puedo escucharte a través del reconocimiento de voz. ¿Por dónde empezamos?",
+                "Mis capacidades incluyen: conversación natural en español, respuesta a preguntas, síntesis de voz para hablarte, reconocimiento de voz para escucharte, y hasta sincronización de mis labios cuando hablo. ¡Soy una asistente bastante completa!",
+            ],
+            jokes: [
+                "¿Por qué los programadores prefieren el frío? Porque tienen miedo a los bugs. 🐛😄",
+                "Un robot entra a un bar. El barman pregunta: '¿Qué te pongo?' El robot responde: '110 voltios.' ⚡🤖",
+                "¿Cómo se llama el campeón de buceo japonés? Tokofondo. 🐠😂",
+                "¿Qué hace una abeja en el gimnasio? ¡Zum-ba! 🐝💃",
+                "¿Por qué el libro de matemáticas estaba triste? Porque tenía muchos problemas. 📚😔",
+                "¿Qué le dijo el cero al ocho? ¡Qué buen cinturón tienes! 😄",
+            ],
+            ai_info: [
+                "La Inteligencia Artificial es fascinante. Es un campo que busca crear sistemas capaces de realizar tareas que normalmente requieren inteligencia humana: aprender, razonar, percibir, resolver problemas y entender lenguaje. Yo misma soy un ejemplo de IA aplicada a la conversación.",
+                "La IA moderna se basa en aprendizaje profundo, transformers y modelos de lenguaje masivos entrenados con enormes cantidades de texto. Esto permite a sistemas como yo entender el contexto y generar respuestas coherentes.",
+            ],
+            farewells: [
+                "¡Hasta pronto! Ha sido un placer charlar contigo. Recuerda que siempre estaré aquí cuando me necesites. 💫",
+                "¡Cuídate mucho! Vuelve cuando quieras, estaré lista para ayudarte. Hasta la próxima. ✨",
+                "¡Fue genial hablar contigo! Espero que hayas encontrado lo que buscabas. ¡Vuelve pronto! 🌟",
+            ],
+            thanks: [
+                "¡De nada! Es un placer poder ayudarte. ¿Hay algo más en lo que pueda asistirte?",
+                "¡Me alegra haber podido ayudarte! No dudes en preguntarme lo que necesites.",
+                "¡Con mucho gusto! Para eso estoy aquí. ¿Hay algo más que quieras saber?",
+            ],
+            default: [
+                "Qué pregunta tan interesante. Aunque no tengo toda la información del mundo, haré mi mejor esfuerzo para ayudarte. ¿Podrías darme más detalles o contexto?",
+                "Entiendo tu pregunta. Déjame pensar en la mejor manera de responderte... Cada conversación me ayuda a aprender y mejorar. ¿Qué más te gustaría saber?",
+                "Eso es algo fascinante sobre lo que reflexionar. Mi perspectiva es que la mejor manera de abordar esto es con curiosidad y mente abierta. ¿Qué piensas tú?",
+            ]
         };
     }
 
     async think(userInput) {
-        const currentTime = this.getRealTime();
-        console.log(`Brain: Thinking at ${currentTime.time} on ${currentTime.date}...`);
-
-        // Show thinking state
-        if (this.core.assistantEl) {
-            this.core.assistantEl.classList.add('assistant-talking');
-        }
-
-        const input = userInput.toLowerCase();
+        const input = userInput.toLowerCase().trim();
         let response = "";
 
-        // Intelligent Gemini-style Reasoning
-        if (input.includes('hola') || input.includes('buenos') || input.includes('tardes')) {
-            response = `¡Hola! Soy tu asistente financiera avanzada. Hoy es ${currentTime.date} y registramos las ${currentTime.time}. Es un momento ideal para analizar tu progreso en EduFlow. ¿Te gustaría que revisemos tus activos o que continuemos con la lección de finanzas?`;
-        }
-        else if (input.includes('mercado') || input.includes('invertir') || input.includes('bitcoin') || input.includes('dinero')) {
-            response = "Desde mi perspectiva como analista financiera, el mercado actual requiere una visión a largo plazo. La diversificación y la gestión del riesgo son fundamentales. En esta lección de EduFlow, aprenderás precisamente a identificar esas oportunidades donde otros solo ven incertidumbre.";
-        }
-        else if (input.includes('qué hora es') || input.includes('fecha') || input.includes('hoy')) {
-            response = `La precisión es vital en las finanzas. Hoy es ${currentTime.date} y son exactamente las ${currentTime.time} en tu equipo. Siempre estamos sincronizados con el 'aquí y el ahora'.`;
-        }
-        else if (input.includes('ahorro') || input.includes('gasto') || input.includes('presupuesto')) {
-            response = "El presupuesto es el mapa de tu libertad financiera. Al optimizar tus ahorros hoy, estamos maximizando tu capacidad de interés compuesto para el futuro. ¿Quieres que veamos cuánto has avanzado hoy en este módulo?";
-        }
-        else if (input.includes('continuar') || input.includes('siguiente') || input.includes('dale') || input.includes('vamos')) {
-            response = "Entendido. La proactividad es una cualidad de los grandes inversores. Avancemos al siguiente paso de tu formación financiera ahora mismo.";
-            setTimeout(() => {
-                const nextBtn = document.querySelector('button.bg-primary, a.bg-primary') || Array.from(document.querySelectorAll('button')).find(b => b.innerText.toLowerCase().includes('continuar'));
-                if (nextBtn) nextBtn.click();
-            }, 2500);
-        }
-        else if (input.includes('quién eres')) {
-            response = "Soy tu asistente inteligente de EduFlow, dotada con la capacidad de procesamiento de Gemini. Mi objetivo es guiarte a través de este ecosistema financiero para que tomes las mejores decisiones con tu capital.";
-        }
+        if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) response = this.pick(this.knowledge.greeting);
+        else if (input.match(/quién eres|tu nombre|quien eres|cómo te llamas/)) response = this.pick(this.knowledge.identity);
+        else if (input.match(/qué puedes|qué haces|qué sabes|capacidades|ayúdame/)) response = this.pick(this.knowledge.capabilities);
+        else if (input.match(/chiste|broma|humor|gracioso|reír/)) response = this.pick(this.knowledge.jokes);
+        else if (input.match(/ia|inteligencia artificial|llm|gpt/)) response = this.pick(this.knowledge.ai_info);
+        else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) response = this.pick(this.knowledge.farewells);
+        else if (input.match(/gracias|thanks|agradezco/)) response = this.pick(this.knowledge.thanks);
         else {
-            // General "Gemini" response for unknown queries
-            response = `He analizado tu consulta sobre "${userInput}". En el contexto actual de tu formación en ${this.context.header || 'EduFlow'}, mi recomendación es que sigamos profundizando en los fundamentos financieros. La constancia es lo que separa a los ahorradores de los verdaderos inversores.`;
+            response = this.pick(this.knowledge.default);
         }
 
-        // Response handling
-        this.core.speak(response);
-        this.showFloatingResponse(response);
-    }
-
-    showFloatingResponse(text) {
-        const old = document.getElementById('brain-response');
-        if (old) old.remove();
-
-        const bubble = document.createElement('div');
-        bubble.id = 'brain-response';
-        bubble.style = `
-            position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(12px);
-            padding: 24px; border-radius: 24px; box-shadow: 0 20px 50px rgba(32, 111, 238, 0.2);
-            border: 1px solid rgba(32, 111, 238, 0.3); z-index: 9999; max-width: 340px;
-            font-size: 15px; color: #1e293b; line-height: 1.6; font-family: 'Inter', sans-serif;
-            animation: geminiSlide 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-        `;
-
-        bubble.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <div style="width: 12px; height: 12px; background: #206fee; border-radius: 50%; animation: pulse 1s infinite alternate;"></div>
-                <span style="font-size: 11px; font-weight: 800; color: #206fee; letter-spacing: 1px; text-transform: uppercase;">Gemini 1.5 Insight</span>
-            </div>
-            <div style="font-weight: 500;">${text}</div>
-            <div style="margin-top: 15px; font-size: 10px; color: #94a3b8; text-align: right;">Sincronizado: ${new Date().toLocaleTimeString()}</div>
-        `;
-
-        document.body.appendChild(bubble);
-
-        const styleId = 'brain-anim-styles';
-        if (!document.getElementById(styleId)) {
-            const s = document.createElement('style');
-            s.id = styleId;
-            s.innerHTML = `
-                @keyframes geminiSlide {
-                    from { opacity: 0; transform: translate(-50%, -30px) scale(0.95); }
-                    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
-                }
-                @keyframes pulse {
-                    from { transform: scale(1); opacity: 1; }
-                    to { transform: scale(1.3); opacity: 0.6; }
-                }
-            `;
-            document.head.appendChild(s);
+        // Simulate thinking delay
+        if (this.core) {
+            this.core.showTypingIndicator();
+            setTimeout(() => {
+                this.core.hideTypingIndicator();
+                this.core.speak(response);
+                this.core.addMessage(response, 'ana');
+            }, 1000 + Math.random() * 1000);
         }
-
-        setTimeout(() => {
-            bubble.style.transition = 'all 0.8s ease';
-            bubble.style.opacity = '0';
-            bubble.style.transform = 'translate(-50%, -20px) scale(0.9)';
-            setTimeout(() => bubble.remove(), 800);
-        }, 8500);
     }
+
+    pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 }

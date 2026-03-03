@@ -1,7 +1,7 @@
 {
-    "name": "stitch-inicio-eduflow",
+    "name": "avatar",
     "version": "1.0.0",
-    "description": "EduFlow export from Stitch",
+    "description": "Avatar project",
     "main": "index.html",
     "scripts": {
         "dev": "vite",
