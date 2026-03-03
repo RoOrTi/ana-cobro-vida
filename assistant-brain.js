@@ -88,15 +88,22 @@ class AssistantBrain {
         const input = userInput.toLowerCase().trim();
         let response = "";
 
-        if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) response = this.pick(this.knowledge.greeting);
+        if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) {
+            response = this.pick(this.knowledge.greeting);
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('happy');
+        }
         else if (input.match(/quién eres|tu nombre|quien eres|cómo te llamas/)) response = this.pick(this.knowledge.identity);
         else if (input.match(/qué puedes|qué haces|qué sabes|capacidades|ayúdame/)) response = this.pick(this.knowledge.capabilities);
-        else if (input.match(/chiste|broma|humor|gracioso|reír/)) response = this.pick(this.knowledge.jokes);
+        else if (input.match(/chiste|broma|humor|gracioso|reír/)) {
+            response = this.pick(this.knowledge.jokes);
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('happy');
+        }
         else if (input.match(/ia|inteligencia artificial|llm|gpt/)) response = this.pick(this.knowledge.ai_info);
         else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) response = this.pick(this.knowledge.farewells);
         else if (input.match(/gracias|thanks|agradezco/)) response = this.pick(this.knowledge.thanks);
         else if (input.match(/finanzas|mercado|bolsa|dólar|dolar|merval|byma|riesgo país|acciones|bonos|noticias/)) {
             response = this.getFinancialUpdate();
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('serious');
         }
         else {
             response = this.pick(this.knowledge.default);
@@ -104,11 +111,13 @@ class AssistantBrain {
 
         // Simulate thinking delay
         if (this.core) {
+            if (this.core.anaCharacter) this.core.anaCharacter.setPose('thinking');
             this.core.showTypingIndicator();
             setTimeout(() => {
                 this.core.hideTypingIndicator();
                 this.core.speak(response);
                 this.core.addMessage(response, 'ana');
+                // Back to neutral after speaking if no specific pose was set or just let it be
             }, 1000 + Math.random() * 1000);
         }
     }

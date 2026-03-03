@@ -158,3 +158,41 @@ body.ana-premium {
         transform: translateY(0) scale(1);
     }
 }
+
+/* Poses & Emotions */
+.pose-thinking #headGroup {
+    transform: rotate(-3deg) translateY(-2px);
+    transition: transform 0.8s ease;
+}
+
+.pose-thinking #leftPupil,
+.pose-thinking #rightPupil {
+    transform: translateY(-2px) translateX(1px);
+}
+
+.pose-happy .avatar-aura {
+    background: radial-gradient(ellipse, rgba(232, 127, 163, 0.25) 0%, transparent 70%);
+    animation-duration: 1.5s;
+}
+
+.pose-happy #mouthLine {
+    transform: scaleX(1.1) translateY(1px);
+}
+
+.pose-serious .avatar-aura {
+    background: radial-gradient(ellipse, rgba(155, 127, 232, 0.2) 0%, transparent 70%);
+}
+
+.pose-serious #headGroup {
+    transform: scale(1.02);
+    transition: transform 1s ease;
+}
+
+/* Base Head/Body Reset */
+#headGroup,
+#bodyGroup,
+#leftPupil,
+#rightPupil,
+#mouthLine {
+    transition: transform 0.5s ease;
+}
