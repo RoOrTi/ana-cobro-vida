@@ -6,6 +6,8 @@
 class AssistantBrain {
     constructor(core) {
         this.core = core;
+        this.financialData = null;
+        this.loadFinancialData();
         this.knowledge = {
             greeting: [
                 "¡Hola! Soy Ana, tu asistente virtual inteligente. Estoy aquí para ayudarte con lo que necesites. ¿En qué puedo asistirte hoy?",
@@ -46,8 +48,40 @@ class AssistantBrain {
                 "Qué pregunta tan interesante. Aunque no tengo toda la información del mundo, haré mi mejor esfuerzo para ayudarte. ¿Podrías darme más detalles o contexto?",
                 "Entiendo tu pregunta. Déjame pensar en la mejor manera de responderte... Cada conversación me ayuda a aprender y mejorar. ¿Qué más te gustaría saber?",
                 "Eso es algo fascinante sobre lo que reflexionar. Mi perspectiva es que la mejor manera de abordar esto es con curiosidad y mente abierta. ¿Qué piensas tú?",
+            ],
+            financial_intro: [
+                "Claro, aquí tienes las últimas novedades del sistema financiero:",
+                "Tengo los datos actualizados de los mercados (BYMA, Bloomberg, Reuters). Esto es lo que está pasando:",
+                "Como tu asistente financiera, te cuento que el panorama actual es el siguiente:",
             ]
         };
+    }
+
+    async loadFinancialData() {
+        try {
+            const response = await fetch('financial-data.json');
+            this.financialData = await response.json();
+            console.log("Brain: Financial data loaded successfully");
+        } catch (error) {
+            console.error("Brain: Error loading financial data", error);
+        }
+    }
+
+    getFinancialUpdate() {
+        if (!this.financialData) return "Lo siento, no pude obtener los datos financieros en este momento. Inténtalo de nuevo más tarde.";
+
+        const m = this.financialData.market_summary;
+        const intro = this.pick(this.knowledge.financial_intro);
+
+        let update = `${intro}\n\n`;
+        update += `💵 **Dólar:** Blue $${m.exchange_rates.dolar_blue.venta} | MEP $${m.exchange_rates.dolar_mep.valor} | CCL $${m.exchange_rates.dolar_ccl.valor}\n`;
+        update += `📈 **Merval:** ${m.indices.merval.valor.toLocaleString()} pts (${m.indices.merval.variation}%)\n`;
+        update += `📉 **Riesgo País:** ${m.indices.riesgo_pais.valor} bps\n`;
+        update += `🏦 **Reservas BCRA:** USD ${m.market_summary?.bcra?.reservas || m.bcra.reservas}M. ${m.bcra.summary}\n\n`;
+        update += `📰 **Noticias Destacadas:**\n- ${this.financialData.news_highlights.join('\n- ')}\n\n`;
+        update += `_Fuente: ${this.financialData.sources.join(', ')}_`;
+
+        return update;
     }
 
     async think(userInput) {
@@ -61,6 +95,9 @@ class AssistantBrain {
         else if (input.match(/ia|inteligencia artificial|llm|gpt/)) response = this.pick(this.knowledge.ai_info);
         else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) response = this.pick(this.knowledge.farewells);
         else if (input.match(/gracias|thanks|agradezco/)) response = this.pick(this.knowledge.thanks);
+        else if (input.match(/finanzas|mercado|bolsa|dólar|dolar|merval|byma|riesgo país|acciones|bonos|noticias/)) {
+            response = this.getFinancialUpdate();
+        }
         else {
             response = this.pick(this.knowledge.default);
         }

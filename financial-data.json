@@ -1,0 +1,54 @@
+{
+    "timestamp": "2026-03-03T02:14:28-03:00",
+    "market_summary": {
+        "exchange_rates": {
+            "dolar_blue": {
+                "compra": 1400.0,
+                "venta": 1420.0,
+                "variation": -0.35
+            },
+            "dolar_mep": {
+                "valor": 1413.54,
+                "variation": -0.40
+            },
+            "dolar_ccl": {
+                "valor": 1418.0,
+                "variation": -0.10
+            },
+            "dolar_oficial": {
+                "compra": 1365.0,
+                "venta": 1415.0
+            },
+            "dolar_tarjeta": {
+                "valor": 1839.5
+            }
+        },
+        "indices": {
+            "merval": {
+                "valor": 2603094.0,
+                "variation": -1.48
+            },
+            "riesgo_pais": {
+                "valor": 567,
+                "variation": -0.87
+            }
+        },
+        "bcra": {
+            "reservas": 45560.0,
+            "summary": "El BCRA mantiene racha compradora, superando los USD 45.500 millones gracias a liquidez provincial y compras oficiales."
+        }
+    },
+    "news_highlights": [
+        "BYMA habilitó nuevos CEDEARs de ETFs y el mercado de créditos de carbono.",
+        "Baja en dólares financieros (MEP/CCL) al inicio de marzo cerca de los $1415.",
+        "Provincias como Santa Fe inyectan dólares de exportaciones al sistema.",
+        "A nivel global, caída del 20% en precios del café impacta commodities."
+    ],
+    "sources": [
+        "Bloomberg",
+        "Reuters",
+        "BYMA",
+        "Bolsar",
+        "Ámbito"
+    ]
+}

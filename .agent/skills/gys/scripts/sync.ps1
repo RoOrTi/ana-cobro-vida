@@ -5,7 +5,8 @@ param (
 Write-Host "Starting Git synchronization..." -ForegroundColor Cyan
 
 # Check if inside a git repo
-if (!(git rev-parse --is-inside-work-tree 2>$null)) {
+git rev-parse --is-inside-work-tree 2> $null
+if ($LASTEXITCODE -ne 0) {
     Write-Error "Not a git repository."
     exit 1
 }
@@ -18,7 +19,8 @@ git add .
 $status = git status --porcelain
 if (-not $status) {
     Write-Host "No changes to commit. Proceeding to pull/push..." -ForegroundColor Yellow
-} else {
+}
+else {
     Write-Host "Committing changes..."
     git commit -m $CommitMessage
 }
