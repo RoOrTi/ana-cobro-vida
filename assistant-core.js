@@ -85,20 +85,27 @@ class AssistantCore {
         }
     }
 
-    addMessage(text, sender) {
+    addMessage(text, sender, chartData = null) {
         const wrap = document.getElementById('messagesWrap');
         if (!wrap) return;
 
         const msgDiv = document.createElement('div');
         msgDiv.className = `msg ${sender}`;
 
-        // Simple avatar logic for within chat
-        const avatar = sender === 'ana' ? '✨' : '👤';
         const bubbleClass = sender === 'ana' ? 'ana-msg-bubble' : 'user-msg-bubble';
 
-        msgDiv.innerHTML = `
-            <div class="${bubbleClass}">${text}</div>
-        `;
+        msgDiv.innerHTML = `<div class="${bubbleClass}">${text}</div>`;
+
+        if (chartData && typeof FinancialCharts !== 'undefined') {
+            const chartId = `chart-${Date.now()}`;
+            const chartCont = FinancialCharts.createChartContainer(chartId);
+            msgDiv.appendChild(chartCont);
+
+            // Render chart after a small delay to ensure DOM is ready
+            setTimeout(() => {
+                FinancialCharts.renderPriceChart(chartId, chartData.label, chartData.points, chartData.color);
+            }, 100);
+        }
 
         wrap.appendChild(msgDiv);
         wrap.scrollTop = wrap.scrollHeight;

@@ -31,9 +31,16 @@ const ANA_SVG_TEMPLATE = `
           <stop offset="0%" stop-color="#e88098"/>
           <stop offset="100%" stop-color="#c05070"/>
         </radialGradient>
+        <linearGradient id="hairHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+        </linearGradient>
         <filter id="glow-filter">
           <feGaussianBlur stdDeviation="3" result="blur"/>
           <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+        <filter id="shadow-filter">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
         </filter>
       </defs>
       <rect width="280" height="340" fill="url(#bgAvatarGrad)"/>
@@ -50,6 +57,7 @@ const ANA_SVG_TEMPLATE = `
         <ellipse cx="140" cy="130" rx="90" ry="105" fill="url(#hairGrad)" opacity="0.9"/>
         <ellipse cx="140" cy="165" rx="78" ry="92" fill="url(#skinGrad)" id="faceBase"/>
         <path d="M 62 130 Q 50 80 62 50 Q 80 20 110 18 Q 140 14 170 18 Q 200 20 218 50 Q 230 80 218 130 Q 200 100 180 95 Q 160 90 140 92 Q 120 90 100 95 Q 80 100 62 130 Z" fill="url(#hairGrad)"/>
+        <path d="M 70 80 Q 140 60 210 80" fill="none" stroke="url(#hairHighlight)" stroke-width="4" opacity="0.4" stroke-linecap="round"/>
         <path d="M 62 130 Q 45 160 48 200 Q 52 230 60 255 Q 70 220 68 190 Q 66 165 72 148 Z" fill="url(#hairGrad)"/>
         <path d="M 218 130 Q 235 160 232 200 Q 228 230 220 255 Q 210 220 212 190 Q 214 165 208 148 Z" fill="url(#hairGrad)"/>
         <path d="M 100 138 Q 115 130 128 134" stroke="#c8900a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
@@ -57,17 +65,19 @@ const ANA_SVG_TEMPLATE = `
         
         <g id="eyesWrap">
           <g id="leftEye">
-            <ellipse cx="114" cy="158" rx="14" ry="10" fill="white"/>
+            <ellipse cx="114" cy="158" rx="14" ry="10" fill="white" filter="url(#shadow-filter)"/>
             <circle cx="114" cy="158" r="8" fill="url(#eyeGrad)"/>
             <circle cx="115" cy="159" r="5" fill="#0a1520" id="leftPupil"/>
-            <circle cx="117" cy="155" r="2" fill="white" opacity="0.9"/>
+            <circle cx="116" cy="156" r="2.5" fill="white" opacity="0.8"/>
+            <circle cx="113" cy="160" r="1" fill="white" opacity="0.4"/>
             <rect id="leftLid" x="100" y="148" width="28" height="0" fill="url(#skinGrad)"/>
           </g>
           <g id="rightEye">
-            <ellipse cx="166" cy="158" rx="14" ry="10" fill="white"/>
+            <ellipse cx="166" cy="158" rx="14" ry="10" fill="white" filter="url(#shadow-filter)"/>
             <circle cx="166" cy="158" r="8" fill="url(#eyeGrad)"/>
             <circle cx="167" cy="159" r="5" fill="#0a1520" id="rightPupil"/>
-            <circle cx="169" cy="155" r="2" fill="white" opacity="0.9"/>
+            <circle cx="168" cy="156" r="2.5" fill="white" opacity="0.8"/>
+            <circle cx="165" cy="160" r="1" fill="white" opacity="0.4"/>
             <rect id="rightLid" x="152" y="148" width="28" height="0" fill="url(#skinGrad)"/>
           </g>
         </g>

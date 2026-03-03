@@ -68,25 +68,41 @@ class AssistantBrain {
     }
 
     getFinancialUpdate() {
-        if (!this.financialData) return "Lo siento, no pude obtener los datos financieros en este momento. Inténtalo de nuevo más tarde.";
+        if (!this.financialData) return { text: "Lo siento, no pude obtener los datos financieros en este momento. Inténtalo de nuevo más tarde.", chart: null };
 
         const m = this.financialData.market_summary;
         const intro = this.pick(this.knowledge.financial_intro);
 
-        let update = `${intro}\n\n`;
-        update += `💵 **Dólar:** Blue $${m.exchange_rates.dolar_blue.venta} | MEP $${m.exchange_rates.dolar_mep.valor} | CCL $${m.exchange_rates.dolar_ccl.valor}\n`;
-        update += `📈 **Merval:** ${m.indices.merval.valor.toLocaleString()} pts (${m.indices.merval.variation}%)\n`;
-        update += `📉 **Riesgo País:** ${m.indices.riesgo_pais.valor} bps\n`;
-        update += `🏦 **Reservas BCRA:** USD ${m.market_summary?.bcra?.reservas || m.bcra.reservas}M. ${m.bcra.summary}\n\n`;
-        update += `📰 **Noticias Destacadas:**\n- ${this.financialData.news_highlights.join('\n- ')}\n\n`;
-        update += `_Fuente: ${this.financialData.sources.join(', ')}_`;
+        let text = `${intro}\n\n`;
+        text += `💵 **Dólar:** Blue $${m.exchange_rates.dolar_blue.venta} | MEP $${m.exchange_rates.dolar_mep.valor} | CCL $${m.exchange_rates.dolar_ccl.valor}\n`;
+        text += `📈 **Merval:** ${m.indices.merval.valor.toLocaleString()} pts (${m.indices.merval.variation}%)\n`;
+        text += `📉 **Riesgo País:** ${m.indices.riesgo_pais.valor} bps\n`;
+        text += `🏦 **Reservas BCRA:** USD ${m.bcra.reservas}M. ${m.bcra.summary}\n\n`;
+        text += `_Fuente: ${this.financialData.sources.join(', ')}_`;
 
-        return update;
+        // Generate mock points
+        const points = [];
+        let cur = m.indices.merval.valor * 0.95;
+        for (let i = 0; i < 20; i++) {
+            cur += (Math.random() - 0.45) * 10000;
+            points.push(cur);
+        }
+        points.push(m.indices.merval.valor);
+
+        return {
+            text: text,
+            chart: {
+                label: 'Tendencia Merval',
+                points: points,
+                color: '#c9a96e'
+            }
+        };
     }
 
     async think(userInput) {
         const input = userInput.toLowerCase().trim();
         let response = "";
+        let chartData = null;
 
         if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) {
             response = this.pick(this.knowledge.greeting);
@@ -102,7 +118,9 @@ class AssistantBrain {
         else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) response = this.pick(this.knowledge.farewells);
         else if (input.match(/gracias|thanks|agradezco/)) response = this.pick(this.knowledge.thanks);
         else if (input.match(/finanzas|mercado|bolsa|dólar|dolar|merval|byma|riesgo país|acciones|bonos|noticias/)) {
-            response = this.getFinancialUpdate();
+            const update = this.getFinancialUpdate();
+            response = update.text;
+            chartData = update.chart;
             if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('serious');
         }
         else {
@@ -116,7 +134,7 @@ class AssistantBrain {
             setTimeout(() => {
                 this.core.hideTypingIndicator();
                 this.core.speak(response);
-                this.core.addMessage(response, 'ana');
+                this.core.addMessage(response, 'ana', chartData);
                 // Back to neutral after speaking if no specific pose was set or just let it be
             }, 1000 + Math.random() * 1000);
         }
