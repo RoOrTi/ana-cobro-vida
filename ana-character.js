@@ -119,6 +119,10 @@ const ANA_SVG_TEMPLATE = `
             <rect id="teethTop" x="140" y="196" width="20" height="0" rx="2" fill="white" opacity="0.95"/>
             <ellipse cx="150" cy="202" rx="10" ry="3" fill="#fff" opacity="0.3" id="lipGloss" />
           </g>
+          <!-- Hair Strands (short, reveals shoulders) -->
+          <path d="M 105 100 Q 95 180 85 220" fill="none" stroke="url(#grad-hair)" stroke-width="4" opacity="0.8" />
+          <path d="M 195 100 Q 205 180 215 220" fill="none" stroke="url(#grad-hair)" stroke-width="4" opacity="0.8" />
+          <path d="M 150 70 Q 140 100 130 150" fill="none" stroke="#4a2a18" stroke-width="1.5" opacity="0.3" />
         </g>
       </g>
     </svg>
