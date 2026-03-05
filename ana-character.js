@@ -87,7 +87,7 @@ const ANA_SVG_TEMPLATE = `
         <g id="headGroup">
           <rect x="138" y="175" width="24" height="45" rx="12" fill="url(#grad-skin)" />
           <path d="M 138 210 Q 150 225 162 210" fill="none" stroke="#bf7a50" stroke-width="2" opacity="0.2" />
-          <path d="M 70 120 Q 70 30 150 25 Q 230 30 230 120 Q 240 250 210 420 L 90 420 Q 60 250 70 120 Z" fill="url(#grad-hair)" />
+          <path d="M 70 120 Q 70 30 150 25 Q 230 30 230 120 Q 225 180 210 220 L 90 220 Q 75 180 70 120 Z" fill="url(#grad-hair)" />
           <path d="M 105 100 Q 100 160 115 195 Q 130 225 150 225 Q 170 225 185 195 Q 200 160 195 100 Q 180 70 150 70 Q 120 70 105 100 Z" fill="url(#grad-skin)" />
           <g id="faceShading">
               <ellipse cx="125" cy="140" rx="18" ry="14" fill="#603010" opacity="0.08" />
