@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Evolution — Hyper-Realistic Avatar</title>
+    <style>
+        :root {
+            --skin-primary: #fde8d0;
+            --skin-shadow: #d9966a;
+            --skin-accent: #f0806a;
+            --accent-glow: #b06aff;
+            --accent-hot: #ff6ab0;
+            --bg-deep: #0a0510;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 30%, #1a0a2e 0%, #0d0514 60%, #000 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* ── Premium Ambient Effects ── */
+        .glow-container {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glow-orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(176, 106, 255, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            animation: floating 20s infinite ease-in-out;
+        }
+
+        @keyframes floating {
+
+            0%,
+            100% {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            50% {
+                transform: translate(10%, 10%) scale(1.1);
+            }
+        }
+
+        .title-section {
+            position: absolute;
+            top: 40px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .brand-label {
+            letter-spacing: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, transparent, #b06aff, transparent);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .ana-title {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: 15px;
+            text-shadow: 0 0 30px rgba(176, 106, 255, 0.5);
+        }
+
+        .main-stage {
+            position: relative;
+            width: 400px;
+            height: 700px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .avatar-shadow {
+            position: absolute;
+            bottom: 20px;
+            width: 200px;
+            height: 20px;
+            background: radial-gradient(ellipse, rgba(0, 0, 0, 0.6) 0%, transparent 70%);
+            filter: blur(5px);
+        }
+
+        #ana-svg-container {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 40px rgba(176, 106, 255, 0.15));
+        }
+
+        .controls-overlay {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 25px;
+            border-radius: 40px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-mode {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        .btn-mode:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-mode.active {
+            color: #fff;
+            background: linear-gradient(135deg, #b06aff, #ff6ab0);
+            box-shadow: 0 4px 15px rgba(176, 106, 255, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="glow-container">
+        <div class="glow-orb" style="top: 20%; left: 20%;"></div>
+        <div class="glow-orb"
+            style="bottom: 10%; right: 10%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,106,176,0.1) 0%, transparent 70%);">
+        </div>
+    </div>
+
+    <div class="title-section">
+        <p class="brand-label">Premium Digital Identity</p>
+        <h1 class="ana-title">A N A</h1>
+    </div>
+
+    <div class="main-stage">
+        <div class="avatar-shadow"></div>
+        <svg id="ana-svg-container" viewBox="0 0 300 700" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+            <defs>
+                <!-- Skin Realism -->
+                <radialGradient id="grad-skin" cx="40%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#fff1e0" /> <!-- Highlight -->
+                    <stop offset="45%" stop-color="#f5d0b0" /> <!-- Midtone -->
+                    <stop offset="85%" stop-color="#d9966a" /> <!-- Shadow -->
+                    <stop offset="100%" stop-color="#bf7a50" /> <!-- Deep Shadow -->
+                </radialGradient>
+
+                <!-- Subsurface Scattering Simulation -->
+                <radialGradient id="grad-subsurface" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.15" />
+                    <stop offset="100%" stop-color="#ff4d4d" stop-opacity="0" />
+                </radialGradient>
+
+                <!-- Silk Fabric -->
+                <linearGradient id="grad-dress" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#1e0a3d" />
+                    <stop offset="50%" stop-color="#0f051a" />
+                    <stop offset="100%" stop-color="#050208" />
+                </linearGradient>
+
+                <linearGradient id="grad-dress-hl" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#b06aff" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#b06aff" stop-opacity="0.4" />
+                    <stop offset="100%" stop-color="#b06aff" stop-opacity="0.1" />
+                </linearGradient>
+
+                <!-- Hair Details -->
+                <linearGradient id="grad-hair" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#2b1408" />
+                    <stop offset="40%" stop-color="#1a0a04" />
+                    <stop offset="100%" stop-color="#0d0401" />
+                </linearGradient>
+
+                <filter id="skin-soften">
+                    <feGaussianBlur stdDeviation="0.4" />
+                </filter>
+
+                <filter id="rim-light">
+                    <feMorphology operator="dilate" radius="0.5" in="SourceAlpha" result="dilated" />
+                    <feGaussianBlur stdDeviation="3" in="dilated" result="blurred" />
+                    <feFlood flood-color="#b06aff" flood-opacity="0.4" />
+                    <feComposite in2="blurred" operator="in" />
+                    <feComposite in="SourceGraphic" />
+                </filter>
+            </defs>
+
+            <!-- RENDER GROUP -->
+            <g id="body-entity" filter="url(#rim-light)">
+
+                <!-- Legs High-Realism -->
+                <g id="legs-group">
+                    <!-- Left Leg -->
+                    <g id="leg-l-node">
+                        <path
+                            d="M 115 450 Q 100 520 108 580 Q 115 640 112 660 L 132 660 Q 138 640 142 580 Q 148 520 140 450 Z"
+                            fill="url(#grad-skin)" />
+                        <ellipse cx="122" cy="580" rx="9" ry="5" fill="#c88060" opacity="0.2" /> <!-- Knee -->
+                        <path d="M 112 660 L 105 685 Q 125 698 145 685 L 132 660 Z" fill="#050208" />
+                        <path d="M 125 680 L 125 700" stroke="#331166" stroke-width="2.5" />
+                    </g>
+
+                    <!-- Right Leg -->
+                    <g id="leg-r-node">
+                        <path
+                            d="M 160 450 Q 175 520 168 580 Q 160 640 162 660 L 180 660 Q 185 640 190 580 Q 200 520 185 450 Z"
+                            fill="url(#grad-skin)" />
+                        <ellipse cx="178" cy="580" rx="9" ry="5" fill="#c88060" opacity="0.15" />
+                        <path d="M 162 660 L 165 685 Q 185 698 195 685 L 180 660 Z" fill="#050208" />
+                        <path d="M 175 680 L 175 700" stroke="#331166" stroke-width="2.5" />
+                    </g>
+                </g>
+
+                <!-- Torso / Body Sculpt -->
+                <g id="torso-group">
+                    <path d="M 100 250 
+                 C 85 300 95 400 100 450 
+                 L 200 450 
+                 C 205 400 215 300 200 250 
+                 C 190 200 110 200 100 250 Z" fill="url(#grad-dress)" />
+
+                    <path d="M 115 260 C 105 320 110 400 120 440" fill="none" stroke="url(#grad-dress-hl)"
+                        stroke-width="2.5" opacity="0.4" />
+                    <path d="M 185 260 C 195 320 190 400 180 440" fill="none" stroke="url(#grad-dress-hl)"
+                        stroke-width="2.5" opacity="0.4" />
+
+                    <path d="M 120 220 
+                 Q 150 270 180 220 
+                 L 180 200 
+                 Q 150 215 120 200 Z" fill="url(#grad-skin)" />
+
+                    <path d="M 150 218 L 150 245" stroke="#bf7a50" stroke-width="1.5" opacity="0.3" />
+                </g>
+
+                <!-- Arms SLIM & Elegant -->
+                <g id="arms-group">
+                    <g id="arm-l">
+                        <path d="M 115 210 Q 80 225 65 300 Q 55 380 70 420" fill="none" stroke="url(#grad-skin)"
+                            stroke-width="12" stroke-linecap="round" />
+                        <!-- Closed hand/clenched fist (simplified elegance) -->
+                        <path d="M 70 420 
+                     C 65 425 68 445 75 445 
+                     C 82 445 85 425 80 420 
+                     Z" fill="url(#grad-skin)" />
+                    </g>
+                    <g id="arm-r">
+                        <path d="M 185 210 Q 220 225 235 300 Q 245 380 230 420" fill="none" stroke="url(#grad-skin)"
+                            stroke-width="12" stroke-linecap="round" />
+                        <!-- Closed hand/clenched fist -->
+                        <path d="M 230 420 
+                     C 235 425 232 445 225 445 
+                     C 218 445 215 425 220 420 
+                     Z" fill="url(#grad-skin)" />
+                    </g>
+                </g>
+
+                <!-- Head & Hair -->
+                <g id="head-group">
+                    <rect x="138" y="175" width="24" height="45" rx="12" fill="url(#grad-skin)" />
+                    <path d="M 138 210 Q 150 225 162 210" fill="none" stroke="#bf7a50" stroke-width="2" opacity="0.2" />
+
+                    <path d="M 70 120 Q 70 30 150 25 Q 230 30 230 120 Q 240 250 210 420 L 90 420 Q 60 250 70 120 Z"
+                        fill="url(#grad-hair)" />
+
+                    <path
+                        d="M 105 100 Q 100 160 115 195 Q 130 225 150 225 Q 170 225 185 195 Q 200 160 195 100 Q 180 70 150 70 Q 120 70 105 100 Z"
+                        fill="url(#grad-skin)" />
+
+                    <g id="face-shading">
+                        <ellipse cx="125" cy="140" rx="18" ry="14" fill="#603010" opacity="0.08" /> <!-- Eye sockets -->
+                        <ellipse cx="175" cy="140" rx="18" ry="14" fill="#603010" opacity="0.08" />
+                        <path d="M 148 140 Q 145 165 150 170 Q 155 165 152 140" fill="#603010" opacity="0.1" />
+                        <!-- Nose shadow -->
+                    </g>
+
+                    <!-- Eyes & Premium Eyelashes -->
+                    <g id="eyes">
+                        <!-- Eye Shadow -->
+                        <path d="M 112 135 Q 128 125 144 135" fill="none" stroke="#602040" stroke-width="6"
+                            opacity="0.1" />
+                        <path d="M 156 135 Q 172 125 188 135" fill="none" stroke="#602040" stroke-width="6"
+                            opacity="0.1" />
+
+                        <circle cx="128" cy="145" r="13" fill="#fff" />
+                        <circle cx="128" cy="145" r="8" fill="#7a5ce0" />
+                        <circle cx="128" cy="145" r="4" fill="#000" />
+                        <circle cx="132" cy="141" r="2" fill="#fff" opacity="0.9" />
+
+                        <circle cx="172" cy="145" r="13" fill="#fff" />
+                        <circle cx="172" cy="145" r="8" fill="#7a5ce0" />
+                        <circle cx="172" cy="145" r="4" fill="#000" />
+                        <circle cx="176" cy="141" r="2" fill="#fff" opacity="0.9" />
+
+                        <!-- Eyelash refinement -->
+                        <path d="M 112 138 Q 128 125 144 138" fill="none" stroke="#000" stroke-width="3.5"
+                            stroke-linecap="round" />
+                        <path d="M 156 138 Q 172 125 188 138" fill="none" stroke="#000" stroke-width="3.5"
+                            stroke-linecap="round" />
+
+                        <!-- Eyebrows -->
+                        <path d="M 112 125 Q 128 115 144 125" fill="none" stroke="#2b1408" stroke-width="4.5"
+                            stroke-linecap="round" />
+                        <path d="M 156 125 Q 172 115 188 125" fill="none" stroke="#2b1408" stroke-width="4.5"
+                            stroke-linecap="round" />
+                    </g>
+
+                    <!-- Lips Sensual -->
+                    <g id="lips">
+                        <path d="M 135 195 Q 150 188 165 195 Q 150 202 135 195 Z" fill="#d03060" />
+                        <path d="M 134 195 Q 150 210 166 195 Q 150 198 134 195 Z" fill="#b02048" />
+                        <ellipse cx="150" cy="202" rx="10" ry="3" fill="#fff" opacity="0.4" />
+                    </g>
+
+                    <!-- Extra Hair Strands -->
+                    <path d="M 105 100 Q 95 180 75 350" fill="none" stroke="url(#grad-hair)" stroke-width="4"
+                        opacity="0.8" />
+                    <path d="M 195 100 Q 205 180 225 350" fill="none" stroke="url(#grad-hair)" stroke-width="4"
+                        opacity="0.8" />
+                    <path d="M 150 70 Q 140 100 130 150" fill="none" stroke="#4a2a18" stroke-width="1.5"
+                        opacity="0.3" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <div class="controls-overlay">
+        <button class="btn-mode active" onclick="setAnim('idle')">Ethereal</button>
+        <button class="btn-mode" onclick="setAnim('dance')">Seductive</button>
+        <button class="btn-mode" onclick="setAnim('talk')">Elegant</button>
+    </div>
+
+    <script>
+        let t = 0;
+        let anim = 'idle';
+
+        function setAnim(name) {
+            anim = name;
+            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        const head = document.getElementById('head-group');
+        const body = document.getElementById('body-entity');
+        const armsGroup = document.getElementById('arms-group');
+        const armL = document.getElementById('arm-l');
+        const armR = document.getElementById('arm-r');
+        const legs = document.getElementById('legs-group');
+
+        function tick() {
+            t += 0.018;
+            const s = Math.sin(t);
+            const c = Math.cos(t);
+            const s2 = Math.sin(t * 1.5);
+
+            // Reset basics
+            head.style.transform = '';
+            body.style.transform = '';
+            armsGroup.style.transform = '';
+            armL.style.transform = '';
+            armR.style.transform = '';
+            legs.style.transform = '';
+
+            if (anim === 'idle') {
+                head.style.transform = `translateY(${s * 3}px) rotate(${s * 0.8}deg)`;
+                body.style.transform = `translateY(${c * 1.5}px)`;
+                armL.style.transform = `rotate(${s * 1.5}deg) translateY(${s * 1}px)`;
+                armR.style.transform = `rotate(${-s * 1.5}deg) translateY(${s * 1}px)`;
+            } else if (anim === 'dance') {
+                // Seductive Dance
+                body.style.transform = `translateX(${s * 15}px) rotate(${s * 6}deg) translateY(${Math.abs(s) * -5}px)`;
+                head.style.transform = `rotate(${-s * 3}deg) translateX(${-s * 5}px)`;
+                armL.style.transform = `rotate(${s * 25 - 10}deg)`;
+                armR.style.transform = `rotate(${-s * 25 + 10}deg)`;
+                legs.style.transform = `skewX(${s * 8}deg)`;
+            } else if (anim === 'talk') {
+                // Elegant Presentation
+                head.style.transform = `rotate(${s * 3}deg) translateY(${Math.abs(s) * -2}px)`;
+                body.style.transform = `scale(${1 + Math.abs(s) * 0.015})`;
+                armR.style.transform = `rotate(${-15 + s * 10}deg) translateX(${s * 2}px)`;
+                armL.style.transform = `rotate(${10 + s * 5}deg)`;
+            }
+
+            head.style.transformOrigin = "150px 180px";
+            body.style.transformOrigin = "150px 350px";
+            armL.style.transformOrigin = "115px 210px";
+            armR.style.transformOrigin = "185px 210px";
+            legs.style.transformOrigin = "150px 450px";
+
+            requestAnimationFrame(tick);
+        }
+
+        tick();
+    </script>
+
+</body>
+
+</html>

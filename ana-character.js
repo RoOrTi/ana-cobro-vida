@@ -1,93 +1,124 @@
 /**
- * AnaCharacter.js - The Visual Component of Ana
- * Includes the SVG Avatar and LipSync Logic
+ * AnaCharacter.js - The Visual Component of Ana Evolution
+ * Features the Premium "Evolution" SVG and Enhanced Animation Logic
  */
 
 const ANA_SVG_TEMPLATE = `
-<div class="avatar-wrap" id="anaAvatarWrap">
+<div class="avatar-wrap full-body-mode" id="anaAvatarWrap">
   <div class="avatar-aura" id="anaAvatarAura"></div>
-  <div class="avatar-ring"></div>
+  <div class="particle-container" id="anaParticleContainer"></div>
   <div class="avatar-svg-wrap" id="anaAvatarSvg">
-    <svg viewBox="0 0 280 340" xmlns="http://www.w3.org/2000/svg" id="anaSvg">
+    <svg viewBox="0 0 300 700" xmlns="http://www.w3.org/2000/svg" id="anaSvg" style="overflow:visible;">
       <defs>
-        <radialGradient id="skinGrad" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stop-color="#f5d5b0"/>
-          <stop offset="100%" stop-color="#e8b88a"/>
+        <!-- Skin Realism -->
+        <radialGradient id="grad-skin" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#fff1e0" />
+          <stop offset="45%" stop-color="#f5d0b0" />
+          <stop offset="85%" stop-color="#d9966a" />
+          <stop offset="100%" stop-color="#bf7a50" />
         </radialGradient>
-        <radialGradient id="hairGrad" cx="50%" cy="20%" r="70%">
-          <stop offset="0%" stop-color="#f0d060"/>
-          <stop offset="50%" stop-color="#d4a830"/>
-          <stop offset="100%" stop-color="#b8860b"/>
-        </radialGradient>
-        <radialGradient id="eyeGrad" cx="50%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#5aa0d8"/>
-          <stop offset="100%" stop-color="#2a6090"/>
-        </radialGradient>
-        <radialGradient id="bgAvatarGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#1a1a3e"/>
-          <stop offset="100%" stop-color="#0a0a1a"/>
-        </radialGradient>
-        <radialGradient id="lipGrad" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stop-color="#e88098"/>
-          <stop offset="100%" stop-color="#c05070"/>
-        </radialGradient>
-        <linearGradient id="hairHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#fff" stop-opacity="0.2"/>
-          <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+
+        <!-- Silk Fabric -->
+        <linearGradient id="grad-dress" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1e0a3d" />
+          <stop offset="50%" stop-color="#0f051a" />
+          <stop offset="100%" stop-color="#050208" />
         </linearGradient>
-        <filter id="glow-filter">
-          <feGaussianBlur stdDeviation="3" result="blur"/>
-          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-        </filter>
-        <filter id="shadow-filter">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
+
+        <linearGradient id="grad-dress-hl" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#b06aff" stop-opacity="0.2" />
+          <stop offset="50%" stop-color="#b06aff" stop-opacity="0.4" />
+          <stop offset="100%" stop-color="#b06aff" stop-opacity="0.1" />
+        </linearGradient>
+
+        <!-- Hair Details -->
+        <linearGradient id="grad-hair" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#2b1408" />
+          <stop offset="40%" stop-color="#1a0a04" />
+          <stop offset="100%" stop-color="#0d0401" />
+        </linearGradient>
+
+        <filter id="rim-light">
+          <feMorphology operator="dilate" radius="0.5" in="SourceAlpha" result="dilated" />
+          <feGaussianBlur stdDeviation="3" in="dilated" result="blurred" />
+          <feFlood flood-color="#b06aff" flood-opacity="0.4" />
+          <feComposite in2="blurred" operator="in" />
+          <feComposite in="SourceGraphic" />
         </filter>
       </defs>
-      <rect width="280" height="340" fill="url(#bgAvatarGrad)"/>
-      <g id="bodyGroup">
-        <rect x="118" y="240" width="44" height="50" rx="10" fill="url(#skinGrad)"/>
-        <ellipse cx="140" cy="310" rx="110" ry="50" fill="#1a1030"/>
-        <path d="M 60 305 Q 90 260 118 255 L 118 275 Q 100 280 80 340 Z" fill="#2a1a4a"/>
-        <path d="M 220 305 Q 190 260 162 255 L 162 275 Q 180 280 200 340 Z" fill="#2a1a4a"/>
-        <path d="M 80 340 Q 100 290 118 275 L 162 275 Q 180 290 200 340 Z" fill="#2a1a4a"/>
-        <ellipse cx="140" cy="258" rx="18" ry="3" fill="none" stroke="#c9a96e" stroke-width="1.5" opacity="0.8"/>
-        <circle cx="140" cy="258" r="3" fill="#c9a96e"/>
-      </g>
-      <g id="headGroup">
-        <ellipse cx="140" cy="130" rx="90" ry="105" fill="url(#hairGrad)" opacity="0.9"/>
-        <ellipse cx="140" cy="165" rx="78" ry="92" fill="url(#skinGrad)" id="faceBase"/>
-        <path d="M 62 130 Q 50 80 62 50 Q 80 20 110 18 Q 140 14 170 18 Q 200 20 218 50 Q 230 80 218 130 Q 200 100 180 95 Q 160 90 140 92 Q 120 90 100 95 Q 80 100 62 130 Z" fill="url(#hairGrad)"/>
-        <path d="M 70 80 Q 140 60 210 80" fill="none" stroke="url(#hairHighlight)" stroke-width="4" opacity="0.4" stroke-linecap="round"/>
-        <path d="M 62 130 Q 45 160 48 200 Q 52 230 60 255 Q 70 220 68 190 Q 66 165 72 148 Z" fill="url(#hairGrad)"/>
-        <path d="M 218 130 Q 235 160 232 200 Q 228 230 220 255 Q 210 220 212 190 Q 214 165 208 148 Z" fill="url(#hairGrad)"/>
-        <path d="M 100 138 Q 115 130 128 134" stroke="#c8900a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M 152 134 Q 165 130 180 138" stroke="#c8900a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+      <!-- RENDER GROUP -->
+      <g id="bodyGroup" filter="url(#rim-light)">
         
-        <g id="eyesWrap">
-          <g id="leftEye">
-            <ellipse cx="114" cy="158" rx="14" ry="10" fill="white" filter="url(#shadow-filter)"/>
-            <circle cx="114" cy="158" r="8" fill="url(#eyeGrad)"/>
-            <circle cx="115" cy="159" r="5" fill="#0a1520" id="leftPupil"/>
-            <circle cx="116" cy="156" r="2.5" fill="white" opacity="0.8"/>
-            <circle cx="113" cy="160" r="1" fill="white" opacity="0.4"/>
-            <rect id="leftLid" x="100" y="148" width="28" height="0" fill="url(#skinGrad)"/>
+        <!-- Legs -->
+        <g id="legsGroup">
+          <g id="legL">
+            <path d="M 115 450 Q 100 520 108 580 Q 115 640 112 660 L 132 660 Q 138 640 142 580 Q 148 520 140 450 Z" fill="url(#grad-skin)" />
+            <ellipse cx="122" cy="580" rx="9" ry="5" fill="#c88060" opacity="0.2" />
           </g>
-          <g id="rightEye">
-            <ellipse cx="166" cy="158" rx="14" ry="10" fill="white" filter="url(#shadow-filter)"/>
-            <circle cx="166" cy="158" r="8" fill="url(#eyeGrad)"/>
-            <circle cx="167" cy="159" r="5" fill="#0a1520" id="rightPupil"/>
-            <circle cx="168" cy="156" r="2.5" fill="white" opacity="0.8"/>
-            <circle cx="165" cy="160" r="1" fill="white" opacity="0.4"/>
-            <rect id="rightLid" x="152" y="148" width="28" height="0" fill="url(#skinGrad)"/>
+          <g id="legR">
+            <path d="M 160 450 Q 175 520 168 580 Q 160 640 162 660 L 180 660 Q 185 640 190 580 Q 200 520 185 450 Z" fill="url(#grad-skin)" />
+            <ellipse cx="178" cy="580" rx="9" ry="5" fill="#c88060" opacity="0.15" />
           </g>
         </g>
 
-        <g id="mouthGroup">
-          <path id="upperLip" d="M 118 213 Q 127 208 140 210 Q 153 208 162 213 Q 153 215 140 215 Q 127 215 118 213 Z" fill="url(#lipGrad)"/>
-          <path id="lowerLip" d="M 118 213 Q 127 222 140 224 Q 153 222 162 213 Q 153 216 140 217 Q 127 216 118 213 Z" fill="url(#lipGrad)"/>
-          <path id="mouthLine" d="M 118 213 Q 130 215 140 214 Q 150 215 162 213" stroke="#a04060" stroke-width="1" fill="none" opacity="0.7"/>
-          <ellipse id="mouthInner" cx="140" cy="217" rx="0" ry="0" fill="#1a0510" opacity="0.8"/>
-          <rect id="teethTop" x="128" y="214" width="24" height="0" rx="2" fill="white" opacity="0.9"/>
+        <!-- Torso -->
+        <g id="torsoGroup">
+          <path d="M 100 250 C 85 300 95 400 100 450 L 200 450 C 205 400 215 300 200 250 C 190 200 110 200 100 250 Z" fill="url(#grad-dress)" />
+          <path d="M 115 260 C 105 320 110 400 120 440" fill="none" stroke="url(#grad-dress-hl)" stroke-width="2.5" opacity="0.4" />
+          <path d="M 185 260 C 195 320 190 400 180 440" fill="none" stroke="url(#grad-dress-hl)" stroke-width="2.5" opacity="0.4" />
+          <path d="M 120 220 Q 150 270 180 220 L 180 200 Q 150 215 120 200 Z" fill="url(#grad-skin)" />
+          <path d="M 150 218 L 150 245" stroke="#bf7a50" stroke-width="1.5" opacity="0.3" />
+        </g>
+
+        <!-- Arms -->
+        <g id="armsGroup">
+          <g id="armL">
+              <path d="M 115 210 Q 80 225 65 300 Q 55 380 70 420" fill="none" stroke="url(#grad-skin)" stroke-width="12" stroke-linecap="round" />
+              <path d="M 70 420 C 65 425 68 445 75 445 C 82 445 85 425 80 420 Z" fill="url(#grad-skin)" />
+          </g>
+          <g id="armR">
+              <path d="M 185 210 Q 220 225 235 300 Q 245 380 230 420" fill="none" stroke="url(#grad-skin)" stroke-width="12" stroke-linecap="round" />
+              <path d="M 230 420 C 235 425 232 445 225 445 C 218 445 215 425 220 420 Z" fill="url(#grad-skin)"/>
+          </g>
+        </g>
+
+        <!-- Head & Hair -->
+        <g id="headGroup">
+          <rect x="138" y="175" width="24" height="45" rx="12" fill="url(#grad-skin)" />
+          <path d="M 138 210 Q 150 225 162 210" fill="none" stroke="#bf7a50" stroke-width="2" opacity="0.2" />
+          <path d="M 70 120 Q 70 30 150 25 Q 230 30 230 120 Q 240 250 210 420 L 90 420 Q 60 250 70 120 Z" fill="url(#grad-hair)" />
+          <path d="M 105 100 Q 100 160 115 195 Q 130 225 150 225 Q 170 225 185 195 Q 200 160 195 100 Q 180 70 150 70 Q 120 70 105 100 Z" fill="url(#grad-skin)" />
+          <g id="faceShading">
+              <ellipse cx="125" cy="140" rx="18" ry="14" fill="#603010" opacity="0.08" />
+              <ellipse cx="175" cy="140" rx="18" ry="14" fill="#603010" opacity="0.08" />
+              <path d="M 148 140 Q 145 165 150 170 Q 155 165 152 140" fill="#603010" opacity="0.1" />
+          </g>
+          <g id="eyesGroup">
+            <path d="M 112 135 Q 128 125 144 135" fill="none" stroke="#602040" stroke-width="6" opacity="0.1" />
+            <path d="M 156 135 Q 172 125 188 135" fill="none" stroke="#602040" stroke-width="6" opacity="0.1" />
+            <circle cx="128" cy="145" r="13" fill="#fff" />
+            <circle cx="128" cy="145" r="8" fill="#7a5ce0" id="leftIris" /> 
+            <circle cx="128" cy="145" r="4" fill="#000" id="leftPupil" />
+            <circle cx="132" cy="141" r="2" fill="#fff" opacity="0.9" id="leftGlint" />
+            <circle cx="172" cy="145" r="13" fill="#fff" />
+            <circle cx="172" cy="145" r="8" fill="#7a5ce0" id="rightIris" />
+            <circle cx="172" cy="145" r="4" fill="#000" id="rightPupil" />
+            <circle cx="176" cy="141" r="2" fill="#fff" opacity="0.9" id="rightGlint" />
+            <path d="M 112 138 Q 128 125 144 138" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" id="leftLash" />
+            <path d="M 156 138 Q 172 125 188 138" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" id="rightLash" />
+            <path d="M 112 125 Q 128 115 144 125" fill="none" stroke="#2b1408" stroke-width="4.5" stroke-linecap="round" id="leftBrow" />
+            <path d="M 156 125 Q 172 115 188 125" fill="none" stroke="#2b1408" stroke-width="4.5" stroke-linecap="round" id="rightBrow" />
+            <rect id="leftLid" x="110" y="130" width="36" height="0" fill="url(#grad-skin)" />
+            <rect id="rightLid" x="154" y="130" width="36" height="0" fill="url(#grad-skin)" />
+          </g>
+          <g id="mouthGroup">
+            <path id="upperLip" d="M 135 195 Q 150 188 165 195 Q 150 202 135 195 Z" fill="#d03060" />
+            <path id="lowerLip" d="M 134 195 Q 150 210 166 195 Q 150 198 134 195 Z" fill="#b02048" />
+            <ellipse id="mouthInner" cx="150" cy="200" rx="0" ry="0" fill="#2a0510" opacity="0.9"/>
+            <rect id="teethTop" x="140" y="196" width="20" height="0" rx="2" fill="white" opacity="0.95"/>
+            <ellipse cx="150" cy="202" rx="10" ry="3" fill="#fff" opacity="0.3" id="lipGloss" />
+          </g>
         </g>
       </g>
     </svg>
@@ -105,119 +136,216 @@ const ANA_SVG_TEMPLATE = `
 class AnaCharacter {
   constructor(container) {
     this.container = container;
+    this.anim = "idle";
+    this.frame = 0;
+    this.isAuto = true;
     this.lipSyncInterval = null;
     this.blinkTimeout = null;
+    this.autoCycleInterval = null;
+    this.frameInterval = null;
+    this.isSpeaking = false;
+
+    this.animations = ["idle", "smile", "dance", "runway", "wink", "bow"];
+
     this.render();
-    this.initIdleAnimations();
+    this.initExpressiveness();
   }
 
   render() {
     if (!this.container) return;
     this.container.innerHTML = ANA_SVG_TEMPLATE;
+
+    // Elements
+    this.avatarWrap = document.getElementById('anaAvatarWrap');
+    this.head = document.getElementById('headGroup');
+    this.body = document.getElementById('bodyGroup');
+    this.armL = document.getElementById('armL');
+    this.armR = document.getElementById('armR');
+    this.legs = document.getElementById('legsGroup');
     this.mouthInner = document.getElementById('mouthInner');
     this.teethTop = document.getElementById('teethTop');
     this.lowerLip = document.getElementById('lowerLip');
-    this.voiceViz = document.getElementById('anaVoiceViz');
-    this.avatarWrap = document.getElementById('anaAvatarWrap');
     this.leftLid = document.getElementById('leftLid');
     this.rightLid = document.getElementById('rightLid');
-    this.head = document.getElementById('headGroup');
-    this.body = document.getElementById('bodyGroup');
+    this.particleContainer = document.getElementById('anaParticleContainer');
+    this.voiceViz = document.getElementById('anaVoiceViz');
   }
 
-  initIdleAnimations() {
+  initExpressiveness() {
     this.scheduleBlink();
-    this.startBreathing();
+
+    // Auto cycle animations
+    this.autoCycleInterval = setInterval(() => {
+      if (this.isAuto && !this.isSpeaking) {
+        const next = this.animations[Math.floor(Math.random() * this.animations.length)];
+        this.setAnim(next);
+      }
+    }, 5000);
+
+    // Main animation loop
+    this.frameInterval = setInterval(() => {
+      this.frame = (this.frame + 1) % 120;
+      this.updateFrame();
+    }, 40);
+  }
+
+  setAnim(a) {
+    this.anim = a;
+    this.setPose(a);
+  }
+
+  updateFrame() {
+    const t = this.frame / 120;
+    const pi2 = Math.PI * 2;
+    const s = Math.sin(t * pi2);
+    const c = Math.cos(t * pi2);
+    const s2 = Math.sin(t * pi2 * 2);
+    const absS = Math.abs(s);
+
+    let headT = "";
+    let bodyT = "";
+    let armLT = "";
+    let armRT = "";
+    let legsT = "";
+
+    // Reset origins
+    this.head.style.transformOrigin = "150px 180px";
+    this.body.style.transformOrigin = "150px 350px";
+    this.armL.style.transformOrigin = "115px 210px";
+    this.armR.style.transformOrigin = "185px 210px";
+    this.legs.style.transformOrigin = "150px 450px";
+
+    switch (this.anim) {
+      case "idle":
+        headT = `translateY(${s * 3}px) rotate(${s * 1}deg)`;
+        bodyT = `translateY(${c * 1}px)`;
+        armLT = `rotate(${s * 2}deg)`;
+        armRT = `rotate(${-s * 2}deg)`;
+        break;
+      case "smile":
+        headT = `scale(${1 + absS * 0.02}) translateY(${s * 2}px)`;
+        bodyT = `rotate(${s * 0.5}deg)`;
+        if (this.frame % 40 === 0) this.spawnEmoji("✨");
+        break;
+      case "dance":
+        bodyT = `translateX(${s * 15}px) rotate(${s * 6}deg) translateY(${absS * -5}px)`;
+        headT = `rotate(${-s * 3}deg) translateX(${-s * 5}px)`;
+        armLT = `rotate(${s * 25 - 10}deg)`;
+        armRT = `rotate(${-s * 25 + 10}deg)`;
+        legsT = `skewX(${s * 8}deg)`;
+        if (this.frame % 20 === 0) this.spawnEmoji(this.frame % 40 < 20 ? "🎵" : "🎶");
+        break;
+      case "runway":
+        headT = `rotate(${s * 3}deg) translateY(${absS * -2}px)`;
+        bodyT = `scale(${1 + absS * 0.015})`;
+        armRT = `rotate(${-15 + s * 10}deg) translateX(${s * 2}px)`;
+        armLT = `rotate(${10 + s * 5}deg)`;
+        if (this.frame % 30 === 0) this.spawnEmoji("👠");
+        break;
+      case "wink":
+        headT = `rotate(${s * 4}deg) scale(1.02)`;
+        if (this.frame === 0) { this.spawnEmoji("😉"); this.blink(); }
+        break;
+      case "bow":
+        bodyT = `scaleY(${1 - absS * 0.05}) translateY(${absS * 10}px)`;
+        headT = `translateY(${absS * 15}px) rotate(${absS * 8}deg)`;
+        break;
+    }
+
+    if (headT) this.head.style.transform = headT;
+    if (bodyT) this.body.style.transform = bodyT;
+    if (armLT) this.armL.style.transform = armLT;
+    if (armRT) this.armR.style.transform = armRT;
+    if (legsT) this.legs.style.transform = legsT;
+  }
+
+  spawnEmoji(char) {
+    if (!this.particleContainer) return;
+    const el = document.createElement('div');
+    el.className = 'particle-emoji';
+    el.innerText = char;
+    el.style.left = `${Math.random() * 80 + 10}%`;
+    el.style.top = `20%`;
+    this.particleContainer.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
   }
 
   scheduleBlink() {
-    const nextBlink = 2000 + Math.random() * 4000;
+    const next = 2500 + Math.random() * 5000;
     this.blinkTimeout = setTimeout(() => {
       this.blink();
       this.scheduleBlink();
-    }, nextBlink);
+    }, next);
   }
 
   blink() {
     if (!this.leftLid || !this.rightLid) return;
-    this.leftLid.setAttribute('height', '12');
-    this.rightLid.setAttribute('height', '12');
+    this.leftLid.setAttribute('height', '20');
+    this.rightLid.setAttribute('height', '20');
     setTimeout(() => {
       this.leftLid.setAttribute('height', '0');
       this.rightLid.setAttribute('height', '0');
-    }, 150);
-  }
-
-  startBreathing() {
-    // Add breathing animation to head and body via CSS
-    if (this.head) this.head.style.transition = 'transform 3s ease-in-out';
-    if (this.body) this.body.style.transition = 'transform 3s ease-in-out';
-
-    let up = true;
-    setInterval(() => {
-      const ty = up ? -2 : 0;
-      const sy = up ? 1.01 : 1;
-      if (this.head) this.head.style.transform = `translateY(${ty}px)`;
-      if (this.body) this.body.style.transform = `scaleY(${sy})`;
-      up = !up;
-    }, 3000);
+    }, 120);
   }
 
   setPose(pose) {
     if (!this.avatarWrap) return;
-    this.avatarWrap.classList.remove('pose-thinking', 'pose-happy', 'pose-serious');
-    if (pose) this.avatarWrap.classList.add(`pose-${pose}`);
+    const poses = ['thinking', 'happy', 'serious', 'presenter', 'hypnotic', 'idle', 'smile', 'dance', 'runway', 'wink', 'bow'];
+    poses.forEach(p => this.avatarWrap.classList.remove(`pose-${p}`));
+    this.avatarWrap.classList.add(`pose-${pose}`);
   }
 
   startSpeaking() {
-    this.avatarWrap.classList.add('emotion-talking');
-    this.voiceViz.classList.add('active');
+    this.isSpeaking = true;
+    if (this.avatarWrap) this.avatarWrap.classList.add('ana-speaking');
+    if (this.voiceViz) this.voiceViz.classList.add('active');
     this.startLipSync();
+    this.setAnim("smile");
   }
 
   stopSpeaking() {
-    this.avatarWrap.classList.remove('emotion-talking');
-    this.voiceViz.classList.remove('active');
+    this.isSpeaking = false;
+    if (this.avatarWrap) this.avatarWrap.classList.remove('ana-speaking');
+    if (this.voiceViz) this.voiceViz.classList.remove('active');
     this.stopLipSync();
+
+    // Trigger Fluid Communication event
+    document.dispatchEvent(new CustomEvent('anaFinishedSpeaking'));
   }
 
   startLipSync() {
     if (this.lipSyncInterval) clearInterval(this.lipSyncInterval);
-    let phase = 0;
+    let p = 0;
     this.lipSyncInterval = setInterval(() => {
-      phase += 1;
-      const openAmount = Math.abs(Math.sin(phase * 0.4)) * 0.7 + Math.abs(Math.sin(phase * 0.7)) * 0.3;
-      const rx = openAmount * 14;
-      const ry = openAmount * 8;
-      const teethH = openAmount * 5;
+      p++;
+      const open = Math.abs(Math.sin(p * 0.45)) * 0.8 + Math.abs(Math.sin(p * 0.1)) * 0.2;
+      const rx = open * 18;
+      const ry = open * 15;
+      const tH = open * 8;
+      const dropY = open * 12;
 
       if (this.mouthInner) {
         this.mouthInner.setAttribute('rx', rx.toFixed(1));
         this.mouthInner.setAttribute('ry', ry.toFixed(1));
+        this.mouthInner.setAttribute('cy', (200 + dropY / 4).toFixed(1));
       }
 
-      if (this.teethTop && openAmount > 0.2) {
-        this.teethTop.setAttribute('height', (teethH).toFixed(1));
-        this.teethTop.setAttribute('x', (140 - rx + 2).toFixed(1));
-        this.teethTop.setAttribute('width', ((rx * 2) - 4).toFixed(1));
-      } else if (this.teethTop) {
-        this.teethTop.setAttribute('height', '0');
+      if (this.teethTop) {
+        this.teethTop.setAttribute('height', open > 0.3 ? tH.toFixed(1) : "0");
+        this.teethTop.setAttribute('width', (rx * 1.8).toFixed(1));
+        this.teethTop.setAttribute('x', (150 - rx * 0.9).toFixed(1));
       }
 
-      if (this.lowerLip && openAmount > 0.1) {
-        const dropY = openAmount * 6;
-        this.lowerLip.setAttribute('d', `M 118 213 Q 127 ${222 + dropY} 140 ${224 + dropY} Q 153 ${222 + dropY} 162 213 Q 153 216 140 217 Q 127 216 118 213 Z`);
+      if (this.lowerLip) {
+        this.lowerLip.setAttribute('d', `M 134 195 Q 150 ${210 + dropY} 166 195 Q 150 ${198 + dropY / 2} 134 195 Z`);
       }
-    }, 80);
+    }, 60);
   }
 
   stopLipSync() {
-    if (this.lipSyncInterval) {
-      clearInterval(this.lipSyncInterval);
-      this.lipSyncInterval = null;
-    }
+    if (this.lipSyncInterval) { clearInterval(this.lipSyncInterval); this.lipSyncInterval = null; }
     if (this.mouthInner) { this.mouthInner.setAttribute('rx', '0'); this.mouthInner.setAttribute('ry', '0'); }
-    if (this.teethTop) { this.teethTop.setAttribute('height', '0'); }
-    if (this.lowerLip) { this.lowerLip.setAttribute('d', 'M 118 213 Q 127 222 140 224 Q 153 222 162 213 Q 153 216 140 217 Q 127 216 118 213 Z'); }
+    if (this.teethTop) this.teethTop.setAttribute('height', '0');
+    if (this.lowerLip) this.lowerLip.setAttribute('d', 'M 134 195 Q 150 210 166 195 Q 150 198 134 195 Z');
   }
 }

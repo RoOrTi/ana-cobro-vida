@@ -45,15 +45,28 @@ class AssistantBrain {
                 "¡Con mucho gusto! Para eso estoy aquí. ¿Hay algo más que quieras saber?",
             ],
             default: [
-                "Qué pregunta tan interesante. Aunque no tengo toda la información del mundo, haré mi mejor esfuerzo para ayudarte. ¿Podrías darme más detalles o contexto?",
-                "Entiendo tu pregunta. Déjame pensar en la mejor manera de responderte... Cada conversación me ayuda a aprender y mejorar. ¿Qué más te gustaría saber?",
-                "Eso es algo fascinante sobre lo que reflexionar. Mi perspectiva es que la mejor manera de abordar esto es con curiosidad y mente abierta. ¿Qué piensas tú?",
+                "Analizando los fundamentos de tu consulta... Como tu asistente financiera, me inclino a pensar que esto impacta en la liquidez. ¿Podríamos profundizar en el contexto macro?",
+                "Interesante perspectiva. Desde mi análisis como IA senior, esto se alinea con las tendencias actuales del mercado. ¿Quieres que busque datos específicos sobre este tema?",
+                "Esa es una pregunta que requiere un análisis multivariante. Si me das más detalles sobre los activos involucrados, puedo darte una proyección más precisa.",
+                "En el panorama financiero actual, tu inquietud es muy válida. ¿Te gustaría que analicemos el impacto en tu cartera o el contexto general?",
             ],
             financial_intro: [
-                "Claro, aquí tienes las últimas novedades del sistema financiero:",
-                "Tengo los datos actualizados de los mercados (BYMA, Bloomberg, Reuters). Esto es lo que está pasando:",
-                "Como tu asistente financiera, te cuento que el panorama actual es el siguiente:",
-            ]
+                "Accediendo a terminales financieras... Aquí tienes un resumen ejecutivo:",
+                "Analizando flujos de capital... El panorama actual de los mercados es el siguiente:",
+                "Monitoreando volatilidad y spreads... Los datos clave de hoy son:",
+                "Como tu analista senior, aquí tienes el reporte de situación actual:",
+            ],
+            tech_info: {
+                bitcoin: "Bitcoin es el 'Oro Digital'. Actualmente se posiciona como una reserva de valor robusta frente a la inflación fiduciaria, con un market cap líder.",
+                ethereum: "Ethereum es el ecosistema de finanzas descentralizadas (DeFi) por excelencia, base instrumental para la Web3 y contratos inteligentes.",
+                javascript: "JavaScript es el core lógico que me permite procesar tus datos financieros y renderizar análisis visuales en tiempo real.",
+                avatar: "Soy la evolución de la asistencia digital: Ana Evolution. Un puente entre la IA avanzada y la gestión financiera estratégica."
+            },
+            macro_trading: {
+                geopolitics: "La geopolítica domina la paridad de activos. En escenarios de tensión, el flujo de capital busca 'safe havens' y presiona el alza de commodities como el WTI y el Oro.",
+                decision_making: "La toma de decisiones bajo incertidumbre es clave. Un trader senior no opera noticias, opera la reacción del mercado a los fundamentos económicos.",
+                trader_strategy: "Mi estrategia recomendada hoy se basa en la neutralidad ante la volatilidad electoral y la búsqueda de yields reales ante la inflación proyectada."
+            }
         };
     }
 
@@ -117,20 +130,16 @@ class AssistantBrain {
 
         text += `\n_Fuente: ${this.financialData.sources.join(', ')}_`;
 
-        // Generate points for the chart based on the real value
-        const points = [];
-        const base = m.indices.merval.valor || 2500000;
-        for (let i = 0; i < 15; i++) {
-            points.push(base * (0.98 + Math.random() * 0.04));
-        }
-        points.push(base);
+        // Ticket labels and variations for the bar chart
+        const tickers = ['ALUA', 'GGAL', 'PAMP', 'YPFD', 'EDN', 'LOMA', 'BMA'];
+        const variations = tickers.map(() => parseFloat((Math.random() * 6 - 3).toFixed(2))); // Variation between -3% and +3%
 
         return {
             text: text,
             chart: {
-                label: 'Tendencia Merval (Real)',
-                points: points,
-                color: '#c9a96e'
+                type: 'variation', // New flag to tell core to use renderVariationChart
+                labels: tickers,
+                data: variations
             }
         };
     }
@@ -144,6 +153,24 @@ class AssistantBrain {
             response = this.pick(this.knowledge.greeting);
             if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('happy');
         }
+        else if (input.match(/geopolit|geopolitica|macro|trader|toma de decisiones|decisión/)) {
+            if (input.includes('geopolit')) response = this.knowledge.macro_trading.geopolitics;
+            else if (input.match(/decisión|decimal/)) response = this.knowledge.macro_trading.decision_making;
+            else response = this.knowledge.macro_trading.trader_strategy;
+
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('serious');
+        }
+        else if (input.match(/clima|tiempo|temperatura|llueve|lluvia/)) {
+            if (input.includes('rosario')) {
+                response = "Para mañana en Rosario, Santa Fe, se espera un día agradable con una máxima de 28°C y mínima de 18°C. El cielo estará mayormente despejado, ideal para actividades al aire libre. ¡Un clima típico de marzo en la Chicago Argentina!";
+            } else {
+                response = "No tengo tu ubicación exacta activada, pero puedo decirte que hoy es un buen día para estar informado. Si quieres saber el clima de Rosario, solo dímelo.";
+            }
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('presenter');
+        }
+        else if (input.match(/bitcoin|btc/)) response = this.knowledge.tech_info.bitcoin;
+        else if (input.match(/ethereum|eth/)) response = this.knowledge.tech_info.ethereum;
+        else if (input.match(/javascript|js/)) response = this.knowledge.tech_info.javascript;
         else if (input.match(/quién eres|tu nombre|quien eres|cómo te llamas/)) response = this.pick(this.knowledge.identity);
         else if (input.match(/qué puedes|qué haces|qué sabes|capacidades|ayúdame/)) response = this.pick(this.knowledge.capabilities);
         else if (input.match(/chiste|broma|humor|gracioso|reír/)) {
@@ -153,11 +180,40 @@ class AssistantBrain {
         else if (input.match(/ia|inteligencia artificial|llm|gpt/)) response = this.pick(this.knowledge.ai_info);
         else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) response = this.pick(this.knowledge.farewells);
         else if (input.match(/gracias|thanks|agradezco/)) response = this.pick(this.knowledge.thanks);
+        else if (input.match(/agenda|qué tengo|que tengo|tareas|mis tareas/)) {
+            const tasks = this.core.agenda;
+            if (tasks.length === 0) {
+                response = "Tu agenda está vacía por ahora. ¿Quieres que anote algo?";
+            } else {
+                response = `Tienes ${tasks.length} tareas en tu agenda: ` + tasks.map((t, i) => `${i + 1}. ${t.text}`).join(', ');
+            }
+        }
+        else if (input.match(/anota|recordar|recuerda|recuérdame|tarea|agregar tarea/)) {
+            const taskText = userInput.replace(/anota|recordar|recuerda|recuérdame|tarea|puedes|agregar|por favor/gi, '').trim();
+            if (taskText && taskText.length > 2) {
+                this.core.addTask(taskText);
+                response = `Perfecto, he anotado "${taskText}" en tu agenda.`;
+                if (this.core.anaCharacter) this.core.anaCharacter.setPose('happy');
+            } else {
+                response = "¿Qué te gustaría que anotara en tu agenda?";
+            }
+        }
+        else if (input.match(/qué día es hoy|que dia es hoy|qué fecha es|que fecha es|qué día estamos/)) {
+            const now = new Date();
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            response = `Hoy es ${now.toLocaleDateString('es-ES', options)}.`;
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('presenter');
+        }
+        else if (input.match(/qué hora es|la hora|dime la hora/)) {
+            const now = new Date();
+            response = `Son las ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}.`;
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('presenter');
+        }
         else if (input.match(/finanzas|mercado|bolsa|dólar|dolar|merval|byma|riesgo país|acciones|bonos|noticias/)) {
             const update = this.getFinancialUpdate();
             response = update.text;
             chartData = update.chart;
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('serious');
+            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('hypnotic');
         }
         else {
             response = this.pick(this.knowledge.default);
@@ -171,7 +227,10 @@ class AssistantBrain {
                 this.core.hideTypingIndicator();
                 this.core.speak(response);
                 this.core.addMessage(response, 'ana', chartData);
-                // Back to neutral after speaking if no specific pose was set or just let it be
+
+                // Show 3 follow-up suggestions
+                const suggestions = this.core.getSuggestionsFor(input, response);
+                this.core.showSuggestions(suggestions.slice(0, 3));
             }, 1000 + Math.random() * 1000);
         }
     }

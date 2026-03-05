@@ -11,10 +11,13 @@ class AssistantCore {
         this.isSpeaking = false;
         this.brain = null;
         this.anaCharacter = null;
+        this.agenda = JSON.parse(localStorage.getItem('ana-agenda') || '[]');
 
         this.initAnaCharacter();
         this.initSpeechRecognition();
         this.setupVisualLife();
+        this.initDate();
+        this.updateAgendaUI();
 
         if (typeof AssistantBrain !== 'undefined') {
             this.brain = new AssistantBrain(this);
@@ -22,7 +25,68 @@ class AssistantCore {
         }
 
         this.bindEvents();
+        this.setupFluidCommunication();
         console.log('AssistantCore: Ready for Ana Premium.');
+    }
+
+    setupFluidCommunication() {
+        this.fluidCommunication = true; // Enabled by default as requested
+        document.addEventListener('anaFinishedSpeaking', () => {
+            if (this.fluidCommunication && !this.isListening) {
+                console.log('AssistantCore: Fluid comm auto-starting mic...');
+                setTimeout(() => this.toggleListening(), 500);
+            }
+        });
+    }
+
+    initDate() {
+        const dateEl = document.getElementById('currentDate');
+        if (dateEl) {
+            const now = new Date();
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            dateEl.innerText = now.toLocaleDateString('es-ES', options).toUpperCase();
+        }
+    }
+
+    addTask(text) {
+        if (!text) return;
+        this.agenda.push({ id: Date.now(), text: text, completed: false });
+        localStorage.setItem('ana-agenda', JSON.stringify(this.agenda));
+        this.updateAgendaUI();
+
+        // Small animation hint
+        const sidebar = document.querySelector('.sidebar-agenda');
+        if (sidebar) {
+            sidebar.style.transition = 'all 0.5s';
+            sidebar.style.transform = 'scale(1.2)';
+            setTimeout(() => sidebar.style.transform = 'scale(1)', 500);
+        }
+    }
+
+    removeTask(id) {
+        this.agenda = this.agenda.filter(t => t.id !== id);
+        localStorage.setItem('ana-agenda', JSON.stringify(this.agenda));
+        this.updateAgendaUI();
+    }
+
+    updateAgendaUI() {
+        const list = document.getElementById('agendaList');
+        if (!list) return;
+
+        list.innerHTML = '';
+        this.agenda.forEach((task, index) => {
+            const item = document.createElement('div');
+            item.className = 'agenda-item';
+            item.innerText = index + 1;
+            item.title = task.text;
+            item.onclick = () => {
+                this.speak(`Tarea número ${index + 1}: ${task.text}`);
+                if (confirm(`¿Eliminar tarea: "${task.text}"?`)) {
+                    this.removeTask(task.id);
+                }
+            };
+            list.appendChild(item);
+        });
     }
 
     initAnaCharacter() {
@@ -85,6 +149,19 @@ class AssistantCore {
         }
     }
 
+    getSuggestionsFor(input, response) {
+        if (input.match(/finanzas|dólar|merval/)) {
+            return ["¿Cómo impacta el MEP?", "¿Sugerencias para Cedears?", "Analiza el riesgo país"];
+        } else if (input.match(/geopolit|decisión/)) {
+            return ["Impacto del crudo", "¿Cómo influye el VIX?", "¿Estrategia defensiva?"];
+        } else if (input.match(/clima|rosario/)) {
+            return ["¿Clima el fin de semana?", "¿Va a llover pronto?", "Mejor hora para salir"];
+        } else if (input.match(/hola|buenos/)) {
+            return ["Dame un resumen financiero", "¿Qué sabes de Rosario?", "Anota mis tareas"];
+        }
+        return ["Dime un chiste", "¿Qué puedes hacer?", "Actualidad del mercado"];
+    }
+
     addMessage(text, sender, chartData = null) {
         const wrap = document.getElementById('messagesWrap');
         if (!wrap) return;
@@ -103,12 +180,28 @@ class AssistantCore {
 
             // Render chart after a small delay to ensure DOM is ready
             setTimeout(() => {
-                FinancialCharts.renderPriceChart(chartId, chartData.label, chartData.points, chartData.color);
+                if (chartData.type === 'variation') {
+                    FinancialCharts.renderVariationChart(chartId, chartData.labels, chartData.data);
+                } else {
+                    FinancialCharts.renderPriceChart(chartId, chartData.label, chartData.points, chartData.color);
+                }
             }, 100);
         }
 
         wrap.appendChild(msgDiv);
-        wrap.scrollTop = wrap.scrollHeight;
+
+        // Target the scrollable container
+        const container = document.querySelector('.messages-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+
+            // Re-scroll after chart rendering completes
+            if (chartData) {
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 150);
+            }
+        }
     }
 
     showTypingIndicator() {
@@ -129,6 +222,25 @@ class AssistantCore {
     updateMicUI() {
         const micBtn = document.getElementById('micBtn');
         if (micBtn) micBtn.classList.toggle('recording', this.isListening);
+    }
+
+    showSuggestions(list) {
+        const container = document.getElementById('suggestionsContainer');
+        if (!container) return;
+
+        container.innerHTML = '';
+        list.forEach(text => {
+            const chip = document.createElement('div');
+            chip.className = 'suggestion-chip';
+            chip.innerText = text;
+            chip.onclick = () => {
+                const input = document.getElementById('chat-input');
+                if (input) input.value = text;
+                this.sendMessage();
+                container.innerHTML = '';
+            };
+            container.appendChild(chip);
+        });
     }
 
     speak(text) {

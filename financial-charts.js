@@ -44,10 +44,57 @@ class FinancialCharts {
         });
     }
 
+    static renderVariationChart(canvasId, labels, data) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: data.map(v => v >= 0 ? 'rgba(74, 222, 128, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+                    borderColor: data.map(v => v >= 0 ? '#4ade80' : '#ef4444'),
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => ` Variación: ${context.parsed.y > 0 ? '+' : ''}${context.parsed.y}%`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#e8e8f0', font: { size: 10, weight: 'bold' } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                        ticks: {
+                            color: '#7070a0',
+                            font: { size: 10 },
+                            callback: (value) => `${value}%`
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+
     static createChartContainer(id) {
         const div = document.createElement('div');
         div.className = 'chart-message-wrap';
-        div.style.cssText = 'width: 100%; height: 180px; margin-top: 10px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 10px;';
 
         const canvas = document.createElement('canvas');
         canvas.id = id;
