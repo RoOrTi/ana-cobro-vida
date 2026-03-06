@@ -1,77 +1,7 @@
 /**
  * AnaCharacter.js - The Visual Component of Ana Evolution
- * Holographic Image-Based Avatar with WebGL Shaders (Cortana Style)
+ * Avatar Holográfico — Imagen + CSS Puro (Soporte Offline File:// Sin Problemas CORS WebGL)
  */
-
-const vsSource = `
-  attribute vec2 a_position;
-  attribute vec2 a_texCoord;
-  varying vec2 v_texCoord;
-  void main() {
-    gl_Position = vec4(a_position, 0.0, 1.0);
-    v_texCoord = a_texCoord;
-  }
-`;
-
-const fsSource = `
-  precision mediump float;
-  uniform sampler2D u_image;
-  uniform float u_time;
-  uniform vec2 u_resolution;
-  uniform float u_speaking;
-  uniform float u_glitch;
-
-  varying vec2 v_texCoord;
-
-  // Pseudo-random noise
-  float random(vec2 st) {
-      return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-  }
-
-  void main() {
-      // Invert Y because WebGL texture Y coordinates go from bottom to top
-      vec2 uv = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
-
-      // 1. Organic breathing displacement
-      // Apply mostly in the chest/torso area
-      float breathMask = smoothstep(0.3, 0.6, uv.y) * smoothstep(0.9, 0.6, uv.y);
-      float breathOffset = sin(u_time * 2.0) * 0.008 * breathMask;
-      uv.y -= breathOffset;
-
-      // 2. Holographic fluid/smoke displacement
-      float waveX = sin(uv.y * 15.0 + u_time * 1.5) * 0.002;
-      float waveY = cos(uv.x * 12.0 - u_time * 1.2) * 0.002;
-      uv.x += waveX;
-      uv.y += waveY;
-
-      // 3. Glitch effect triggered by wink/blink/events
-      if (u_glitch > 0.0) {
-          float noiseY = random(vec2(floor(uv.y * 20.0), floor(u_time * 15.0)));
-          float gOffset = (noiseY * 2.0 - 1.0) * 0.04 * u_glitch;
-          uv.x += gOffset;
-      }
-
-      // 4. Chromatic Aberration
-      float aberrationDist = 0.003 + (u_speaking * 0.008) + (u_glitch * 0.015);
-      vec4 colR = texture2D(u_image, vec2(uv.x + aberrationDist, uv.y));
-      vec4 colG = texture2D(u_image, uv);
-      vec4 colB = texture2D(u_image, vec2(uv.x - aberrationDist, uv.y));
-      
-      // Use the alpha channel of the base texture
-      float a = colG.a;
-
-      // Combine RGB
-      vec3 color = vec3(colR.r, colG.g, colB.b);
-
-      // 5. Scanlines
-      float scanline = sin(uv.y * clamp(u_resolution.y, 400.0, 800.0) * 2.0) * 0.04;
-      
-      // 6. Speaking brightness/glow boost
-      color += vec3(0.0, 0.5, 0.8) * u_speaking * 0.3;
-
-      gl_FragColor = vec4(color - scanline * a, a);
-  }
-`;
 
 const ANA_SVG_TEMPLATE = `
 <style>
@@ -89,7 +19,31 @@ const ANA_SVG_TEMPLATE = `
   overflow: visible;
 }
 
-/* BASE WEBGL CANVAS */
+/* ✦ RESPIRACIÓN ORGÁNICA EN CSS ✦ */
+/* Aplicamos un scaleY diferencial para simular expansión de pecho orgánico */
+.ana-holo-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: ana-float 5s ease-in-out infinite, ana-breathe 4s ease-in-out infinite;
+  transform-origin: bottom center;
+  z-index: 2;
+}
+
+@keyframes ana-breathe {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  50% { transform: scaleY(1.02) scaleX(1.005); } /* Expansión pulmonar sutil */
+}
+
+@keyframes ana-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* BASE IMAGE */
 .ana-holo-img {
   position: relative;
   width: 100%;
@@ -101,13 +55,27 @@ const ANA_SVG_TEMPLATE = `
     drop-shadow(0 0 40px rgba(100, 60, 255, 0.45))
     drop-shadow(0 0 80px rgba(0, 180, 255, 0.25))
     saturate(1.15) brightness(1.08);
-  animation: ana-float 5s ease-in-out infinite;
-  z-index: 2;
+  /* Aberración cromática simulada con sombras */
+  transition: filter 0.1s ease-out;
 }
 
-@keyframes ana-float {
-  0%, 100% { transform: translateY(0px) scale(1);      }
-  50%       { transform: translateY(-10px) scale(1.01); }
+/* EFECTO MAR DE REFRACCIÓN / HUMO */
+.ana-holo-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Capa de ruido/humo que se mueve para crear interferencia óptica */
+  background: radial-gradient(circle at 50% 50%, rgba(0, 200, 255, 0.05), transparent 60%);
+  mix-blend-mode: overlay;
+  animation: holo-fluid 6s linear infinite;
+  pointer-events: none;
+  z-index: 4;
+}
+
+@keyframes holo-fluid {
+  0% { transform: translateY(10%) scaleX(1); opacity: 0.3;}
+  50% { transform: translateY(-10%) scaleX(1.05); opacity: 0.6;}
+  100% { transform: translateY(10%) scaleX(1); opacity: 0.3;}
 }
 
 /* SCAN LINE OVERLAY */
@@ -219,38 +187,30 @@ const ANA_SVG_TEMPLATE = `
   100% { transform: translateY(-320px) scale(0.4); opacity: 0; }
 }
 
-/* SPEAKING STATE — enhanced glow */
+/* SPEAKING STATE — enhanced glow y aberación cromática */
 .ana-speaking .ana-holo-img {
   filter:
-    drop-shadow(0 0 25px rgba(0, 220, 255, 0.90))
-    drop-shadow(0 0 55px rgba(180, 100, 255, 0.60))
-    saturate(1.4) brightness(1.20);
+    drop-shadow(6px 0 10px rgba(0, 220, 255, 0.40))   /* Pseudo-cromático Izquierda Azul */
+    drop-shadow(-6px 0 10px rgba(180, 100, 255, 0.40)) /* Pseudo-cromático Derecha Violeta */
+    drop-shadow(0 0 35px rgba(0, 220, 255, 0.90))
+    saturate(1.5) brightness(1.25);
 }
 
 .ana-speaking .ana-holo-glow {
   animation: glow-pulse 0.9s ease-in-out infinite;
 }
 
-/* POSE ANIMATIONS applied to the whole image wrapper */
-.pose-dance    .ana-holo-img { animation: ana-float 5s ease-in-out infinite, ana-dance 0.8s ease-in-out infinite; }
-.pose-runway   .ana-holo-img { animation: ana-float 5s ease-in-out infinite, ana-sway 1.2s ease-in-out infinite;  }
-.pose-hypnotic .ana-holo-wrap { animation: hypnotic-holo 4s ease-in-out infinite; }
-
-@keyframes ana-dance {
-  0%, 100% { transform: translateX(0)    translateY(0)    rotate(0deg);   }
-  25%       { transform: translateX(-8px) translateY(-5px) rotate(-3deg);  }
-  75%       { transform: translateX(8px)  translateY(-5px) rotate(3deg);   }
+/* GLITCH EFFECT (Refracción CSS Pura) */
+.glitch-active .ana-holo-img {
+  animation: css-glitch 0.15s steps(2) infinite;
 }
 
-@keyframes ana-sway {
-  0%, 100% { transform: rotate(-1deg) scale(1);    }
-  50%       { transform: rotate(1deg)  scale(1.02); }
+@keyframes css-glitch {
+  0% { transform: translateX(-5px) scale(1.02); filter: hue-rotate(90deg) drop-shadow(0 0 20px cyan); clip-path: inset(10% 0 50% 0); }
+  50% { transform: translateX(5px) scale(0.98); filter: hue-rotate(-90deg) drop-shadow(0 0 20px magenta); clip-path: inset(40% 0 10% 0); }
+  100% { transform: translateX(0); filter: none; clip-path: none; }
 }
 
-@keyframes hypnotic-holo {
-  0%, 100% { filter: hue-rotate(0deg);    }
-  50%       { filter: hue-rotate(30deg);   }
-}
 </style>
 
 <div class="avatar-wrap full-body-mode" id="anaAvatarWrap">
@@ -263,12 +223,16 @@ const ANA_SVG_TEMPLATE = `
       <!-- Glow halo behind image -->
       <div class="ana-holo-glow"></div>
 
-      <!-- ✦ MAIN HOLOGRAPHIC WEBGL CANVAS ✦ -->
-      <canvas
-        id="anaHoloCanvas"
-        class="ana-holo-img"
-        style="width: 100%; height: 100%;"
-      ></canvas>
+      <!-- ✦ MAIN HOLOGRAPHIC IMAGE ✦ -->
+      <!-- Volvemos al IMG nativo para evadir CORS local, pero con keyframes 3D! -->
+      <div class="ana-holo-img-wrap" id="anaImgWrap">
+        <img
+          id="anaHoloImg"
+          class="ana-holo-img"
+          src="./ana-holographic.png"
+          alt="Ana Holographic Avatar"
+        />
+      </div>
 
       <!-- Sweep scan line -->
       <div class="ana-holo-scan"></div>
@@ -335,14 +299,11 @@ class AnaCharacter {
     this.autoCycleInterval = null;
     this.frameInterval = null;
     this.isSpeaking = false;
-    this.currentLipSyncVal = 0;
-    this.glitchIntensity = 0;
 
     this.animations = ["idle", "smile", "dance", "runway", "wink", "bow"];
 
     this.render();
     this.initExpressiveness();
-    this.initWebGL();
   }
 
   render() {
@@ -352,15 +313,12 @@ class AnaCharacter {
     // Main wrapper
     this.avatarWrap = document.getElementById('anaAvatarWrap');
 
-    // Canvas target
-    this.holoCanvas = document.getElementById('anaHoloCanvas');
+    // HTML Elements directly
+    this.holoImgWrap = document.getElementById('anaImgWrap');
+    this.holoImg = document.getElementById('anaHoloImg');
 
     // Hidden SVG hooks (for blink / lip-sync compatibility)
     this.head = document.getElementById('headGroup');
-    this.body = document.getElementById('bodyGroup');
-    this.armL = document.getElementById('armL');
-    this.armR = document.getElementById('armR');
-    this.legs = document.getElementById('legsGroup');
     this.mouthInner = document.getElementById('mouthInner');
     this.teethTop = document.getElementById('teethTop');
     this.lowerLip = document.getElementById('lowerLip');
@@ -368,133 +326,6 @@ class AnaCharacter {
     this.rightLid = document.getElementById('rightLid');
     this.particleContainer = document.getElementById('anaParticleContainer');
     this.voiceViz = document.getElementById('anaVoiceViz');
-  }
-
-  initWebGL() {
-    if (!this.holoCanvas) return;
-    const canvas = this.holoCanvas;
-
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) {
-      console.warn("WebGL not supported, rendering won't use custom shaders.");
-      return;
-    }
-    this.gl = gl;
-
-    const compileShader = (type, source) => {
-      const shader = gl.createShader(type);
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error('Shader compile failed', gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
-      }
-      return shader;
-    };
-
-    const vs = compileShader(gl.VERTEX_SHADER, vsSource);
-    const fs = compileShader(gl.FRAGMENT_SHADER, fsSource);
-    const program = gl.createProgram();
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    gl.useProgram(program);
-    this.glProgram = program;
-
-    // Buffers for a full quad
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-      -1, -1,
-      1, -1,
-      -1, 1,
-      -1, 1,
-      1, -1,
-      1, 1
-    ]), gl.STATIC_DRAW);
-
-    const texCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-      0, 0,
-      1, 0,
-      0, 1,
-      0, 1,
-      1, 0,
-      1, 1
-    ]), gl.STATIC_DRAW);
-
-    const aPosition = gl.getAttribLocation(program, 'a_position');
-    const aTexCoord = gl.getAttribLocation(program, 'a_texCoord');
-
-    gl.enableVertexAttribArray(aPosition);
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
-
-    gl.enableVertexAttribArray(aTexCoord);
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
-
-    // Uniforms
-    this.uTimeLoc = gl.getUniformLocation(program, 'u_time');
-    this.uResLoc = gl.getUniformLocation(program, 'u_resolution');
-    this.uSpeakingLoc = gl.getUniformLocation(program, 'u_speaking');
-    this.uGlitchLoc = gl.getUniformLocation(program, 'u_glitch');
-
-    // Texture loading
-    this.texture = gl.createTexture();
-    const img = new Image();
-    // Use the downloaded holographic avatar
-    img.src = './ana-holographic.png';
-    // When dealing with local file protocol, CORS shouldn't prevent same-folder loading
-
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-      gl.bindTexture(gl.TEXTURE_2D, this.texture);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-
-      this.webGlStartTime = performance.now();
-      this.renderWebGL();
-    };
-  }
-
-  renderWebGL() {
-    if (!this.gl) return;
-
-    // Smooth targets for uniforms
-    this.currentSpeaking = this.currentSpeaking || 0;
-    this.targetSpeaking = this.isSpeaking ? this.currentLipSyncVal : 0;
-    this.currentSpeaking += (this.targetSpeaking - this.currentSpeaking) * 0.15;
-
-    this.glitchIntensity = this.glitchIntensity || 0;
-    this.glitchIntensity *= 0.85; // Decays quickly
-
-    const now = (performance.now() - this.webGlStartTime) / 1000.0;
-
-    this.gl.uniform1f(this.uTimeLoc, now);
-    this.gl.uniform2f(this.uResLoc, this.holoCanvas.width, this.holoCanvas.height);
-    this.gl.uniform1f(this.uSpeakingLoc, this.currentSpeaking);
-    this.gl.uniform1f(this.uGlitchLoc, this.glitchIntensity);
-
-    // Enable blending for transparent background pixels
-    this.gl.enable(this.gl.BLEND);
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-
-    this.gl.clearColor(0, 0, 0, 0);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-
-    requestAnimationFrame(() => this.renderWebGL());
   }
 
   initExpressiveness() {
@@ -542,18 +373,22 @@ class AnaCharacter {
         break;
     }
 
-    // Apply gentle floating offset to the canvas for image-based poses
-    if (this.holoCanvas) {
+    // Curvatura CSS (Bending)
+    if (this.holoImgWrap) {
       if (this.anim === "bow") {
-        this.holoCanvas.style.transform = `translateY(${absS * 12}px) rotate(${absS * 3}deg)`;
+        this.holoImgWrap.style.transform = `skewX(${absS * 10}deg) scaleY(${1 - absS * 0.1})`;
+      } else if (this.anim === "dance") {
+        this.holoImgWrap.style.transform = `translateX(${s * 8}px) rotate(${s * 3}deg)`;
       } else {
-        this.holoCanvas.style.transform = '';
+        this.holoImgWrap.style.transform = '';
       }
     }
   }
 
   triggerGlitch() {
-    this.glitchIntensity = 1.0;
+    if (!this.holoImgWrap) return;
+    this.holoImgWrap.classList.add('glitch-active');
+    setTimeout(() => this.holoImgWrap.classList.remove('glitch-active'), 250);
   }
 
   spawnEmoji(char) {
@@ -576,12 +411,12 @@ class AnaCharacter {
   }
 
   blink() {
-    // For webgl shader avatar: trigger a small glitch/flicker
-    this.glitchIntensity = 0.6;
-
-    // Keep SVG lid hooks working if they ever reference real elements further down the line
-    if (this.leftLid) this.leftLid.setAttribute('height', '0');
-    if (this.rightLid) this.rightLid.setAttribute('height', '0');
+    // Holographic flicker/blink en CSS (Apagar/prender rápido con glitch)
+    this.triggerGlitch();
+    if (this.holoImg) {
+      this.holoImg.style.opacity = '0.3';
+      setTimeout(() => { if (this.holoImg) this.holoImg.style.opacity = '1'; }, 100);
+    }
   }
 
   setPose(pose) {
@@ -614,26 +449,28 @@ class AnaCharacter {
       p++;
       const open = Math.abs(Math.sin(p * 0.45)) * 0.8 + Math.abs(Math.sin(p * 0.1)) * 0.2;
 
-      // Update the internal value picked up by the WebGL render loop
-      this.currentLipSyncVal = open;
-
-      // SVG hooks (kept for compatibility)
-      if (this.mouthInner) {
-        this.mouthInner.setAttribute('rx', (open * 18).toFixed(1));
-        this.mouthInner.setAttribute('ry', (open * 15).toFixed(1));
+      // Manipulación CSS avanzada en lugar del JS Shaders (Aberración + Brillo paramético)
+      if (this.holoImg) {
+        const distColor = open * 15;
+        this.holoImg.style.filter = `
+          drop-shadow(${distColor}px 0 10px rgba(0, 220, 255, 0.40)) 
+          drop-shadow(-${distColor}px 0 10px rgba(180, 100, 255, 0.40)) 
+          drop-shadow(0 0 ${40 + open * 40}px rgba(0, 220, 255, 0.90))
+          saturate(${1.2 + open * 0.6}) 
+          brightness(${1.1 + open * 0.3})
+        `;
+        // Pequeño jitter Y por resonancia vocal
+        this.holoImg.style.transform = `translateY(${open * -3}px)`;
       }
-      if (this.teethTop) this.teethTop.setAttribute('height', open > 0.3 ? (open * 8).toFixed(1) : "0");
-      if (this.lowerLip) this.lowerLip.setAttribute('d', `M 134 195 Q 150 ${210 + open * 12} 166 195 Q 150 ${198 + open * 6} 134 195 Z`);
+
     }, 60);
   }
 
   stopLipSync() {
     if (this.lipSyncInterval) { clearInterval(this.lipSyncInterval); this.lipSyncInterval = null; }
-
-    this.currentLipSyncVal = 0;
-
-    if (this.mouthInner) { this.mouthInner.setAttribute('rx', '0'); this.mouthInner.setAttribute('ry', '0'); }
-    if (this.teethTop) this.teethTop.setAttribute('height', '0');
-    if (this.lowerLip) this.lowerLip.setAttribute('d', 'M 134 195 Q 150 210 166 195 Q 150 198 134 195 Z');
+    if (this.holoImg) {
+      this.holoImg.style.filter = '';
+      this.holoImg.style.transform = '';
+    }
   }
 }

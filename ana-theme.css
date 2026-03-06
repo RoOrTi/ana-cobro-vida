@@ -123,8 +123,9 @@
 
 body {
     margin: 0;
-    overflow: hidden;
-    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100vh;
     background: var(--ana-bg);
     color: var(--ana-text);
     font-family: 'DM Sans', sans-serif;
@@ -203,8 +204,9 @@ body {
     display: grid;
     grid-template-columns: 80px 400px 1fr;
     width: 100%;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Sidebar Navigation */
@@ -280,8 +282,9 @@ body {
     background: rgba(10, 10, 15, 0.4);
     position: relative;
     height: 100vh;
-    /* Lock height to viewport */
-    overflow: hidden;
+    /* Allow scrolling inside if needed */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .chat-header {
