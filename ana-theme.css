@@ -1,20 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
 
 :root {
-    --ana-bg: #0a0a0f;
-    --ana-surface: #111118;
-    --ana-surface2: #16161f;
-    --ana-border: rgba(255, 255, 255, 0.07);
-    --ana-gold: #c9a96e;
-    --ana-gold-light: #e8d5a3;
-    --ana-text: #e8e8f0;
-    --ana-text-muted: #7070a0;
-    --ana-accent: #9b7fe8;
-    --ana-accent2: #e87fa3;
-    --ana-bubble: #1a1a2e;
-    --ana-user-bubble: #1e1630;
-    --ana-glow: rgba(201, 169, 110, 0.15);
-    --ana-agenda-item: rgba(255, 255, 255, 0.05);
+    --ana-bg: #04060f;
+    --ana-surface: #080c1a;
+    --ana-surface2: #0d1228;
+    --ana-border: rgba(0, 200, 255, 0.08);
+    --ana-gold: #00d4ff;
+    --ana-gold-light: #80eaff;
+    --ana-text: #d0e8ff;
+    --ana-text-muted: #5070a0;
+    --ana-accent: #7c4dff;
+    --ana-accent2: #00e5ff;
+    --ana-bubble: #080f28;
+    --ana-user-bubble: #0c0f30;
+    --ana-glow: rgba(0, 180, 255, 0.20);
+    --ana-agenda-item: rgba(0, 200, 255, 0.06);
 }
 
 .date-display {
@@ -108,13 +108,15 @@
 
 /* Full Body Mode Evolution Adjustments */
 .full-body-mode .avatar-wrap {
-    width: 340px;
-    height: 640px; /* Adapted for the 700px tall SVG */
+    width: 240px;
+    height: 440px;
+    /* Reduced to fit viewport nicely */
     margin: 0 auto;
 }
 
 .full-body-mode .avatar-svg-wrap {
-    border-radius: 0; /* Let the SVG overflow styling work */
+    border-radius: 0;
+    /* Let the SVG overflow styling work */
     background: transparent;
     box-shadow: none;
 }
@@ -440,24 +442,24 @@ body {
     justify-content: center;
     padding: 40px 30px;
     border-right: 1px solid var(--ana-border);
-    background: radial-gradient(circle at 50% 40%, rgba(201, 169, 110, 0.05) 0%, transparent 60%),
-        linear-gradient(180deg, rgba(16, 16, 28, 0.9) 0%, rgba(10, 10, 20, 0.95) 100%);
+    background: radial-gradient(circle at 50% 40%, rgba(0, 150, 255, 0.08) 0%, rgba(90, 40, 200, 0.04) 50%, transparent 70%),
+        linear-gradient(180deg, rgba(6, 10, 28, 0.95) 0%, rgba(4, 6, 18, 0.98) 100%);
     position: relative;
 }
 
 .ana-avatar-container {
-    width: 320px;
-    height: 400px;
+    width: 240px;
+    height: 420px;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     margin: 0 auto;
 }
 
 .avatar-wrap {
     position: relative;
-    width: 280px;
-    height: 340px;
+    width: 220px;
+    height: 400px;
     transform-origin: bottom center;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -466,8 +468,9 @@ body {
     position: absolute;
     inset: -30px;
     border-radius: 50%;
-    background: radial-gradient(ellipse, var(--ana-glow) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(0, 180, 255, 0.25) 0%, rgba(124, 77, 255, 0.12) 50%, transparent 70%);
     animation: pulse-aura 3s ease-in-out infinite;
+    filter: blur(6px);
 }
 
 @keyframes pulse-aura {
@@ -488,7 +491,8 @@ body {
     position: absolute;
     inset: -8px;
     border-radius: 50% 50% 45% 45%;
-    border: 1px solid rgba(201, 169, 110, 0.3);
+    border: 1px solid rgba(0, 200, 255, 0.35);
+    box-shadow: 0 0 12px rgba(0, 200, 255, 0.2), inset 0 0 8px rgba(124, 77, 255, 0.15);
     animation: rotate-ring 20s linear infinite;
 }
 
@@ -507,9 +511,9 @@ body {
     height: 100%;
     position: relative;
     z-index: 2;
-    border-radius: 50% 50% 45% 45%;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(201, 169, 110, 0.1);
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
 }
 
 .avatar-svg-wrap svg {
@@ -535,7 +539,8 @@ body {
 .voice-bar {
     width: 3px;
     border-radius: 2px;
-    background: var(--ana-gold);
+    background: linear-gradient(180deg, #00e5ff, #7c4dff);
+    box-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
     animation: voice-wave 0.8s ease-in-out infinite alternate;
     transform-origin: bottom;
 }
@@ -731,7 +736,7 @@ body {
 }
 
 .pose-happy .avatar-aura {
-    background: radial-gradient(ellipse, rgba(232, 127, 163, 0.25) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(0, 229, 255, 0.30) 0%, rgba(124, 77, 255, 0.15) 50%, transparent 70%);
 }
 
 .pose-happy #mouthLine {

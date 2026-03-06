@@ -1,133 +1,251 @@
 /**
  * AnaCharacter.js - The Visual Component of Ana Evolution
- * Features the Premium "Evolution" SVG and Enhanced Animation Logic
+ * Holographic Image-Based Avatar — Cortana Style
  */
 
 const ANA_SVG_TEMPLATE = `
+<style>
+/* ══════════════════════════════════════════
+   ANA HOLOGRAPHIC IMAGE AVATAR — CORTANA STYLE
+   ══════════════════════════════════════════ */
+
+.ana-holo-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* BASE IMAGE */
+.ana-holo-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter:
+    drop-shadow(0 0 18px rgba(0, 200, 255, 0.70))
+    drop-shadow(0 0 40px rgba(100, 60, 255, 0.45))
+    drop-shadow(0 0 80px rgba(0, 180, 255, 0.25))
+    saturate(1.15) brightness(1.08);
+  animation: ana-float 5s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes ana-float {
+  0%, 100% { transform: translateY(0px) scale(1);      }
+  50%       { transform: translateY(-10px) scale(1.01); }
+}
+
+/* SCAN LINE OVERLAY */
+.ana-holo-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 220, 255, 0.028) 3px,
+    rgba(0, 220, 255, 0.028) 4px
+  );
+  pointer-events: none;
+  z-index: 3;
+  border-radius: 8px;
+}
+
+/* SWEEP SCAN LINE */
+.ana-holo-scan {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0, 229, 255, 0.6) 30%,
+    rgba(124, 77, 255, 0.8) 50%,
+    rgba(0, 229, 255, 0.6) 70%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  animation: scan-sweep 4s linear infinite;
+  z-index: 5;
+  pointer-events: none;
+}
+
+@keyframes scan-sweep {
+  0%   { top: -2px;  opacity: 0; }
+  5%   {             opacity: 1; }
+  95%  {             opacity: 1; }
+  100% { top: 100%;  opacity: 0; }
+}
+
+/* EDGE ENERGY GLOW RING */
+.ana-holo-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50% 50% 40% 40%;
+  background: transparent;
+  box-shadow:
+    0 0 30px 8px  rgba(0, 200, 255, 0.25),
+    0 0 60px 16px rgba(100, 60, 255, 0.15),
+    inset 0 0 25px rgba(0, 200, 255, 0.08);
+  animation: glow-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 30px 8px rgba(0,200,255,0.25), 0 0 60px 16px rgba(100,60,255,0.15);
+  }
+  50% {
+    box-shadow: 0 0 45px 14px rgba(0,200,255,0.42), 0 0 90px 24px rgba(100,60,255,0.28);
+  }
+}
+
+/* BOTTOM PLATFORM LIGHT */
+.ana-holo-platform {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 18px;
+  background: radial-gradient(ellipse, rgba(0,229,255,0.55) 0%, rgba(100,60,255,0.20) 50%, transparent 75%);
+  filter: blur(4px);
+  animation: platform-pulse 3s ease-in-out infinite;
+  z-index: 4;
+  pointer-events: none;
+}
+
+@keyframes platform-pulse {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scaleX(1);    }
+  50%       { opacity: 1.0; transform: translateX(-50%) scaleX(1.12); }
+}
+
+/* FLOATING ENERGY PARTICLES */
+.ana-holo-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  overflow: hidden;
+}
+
+.holo-particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: particle-float linear infinite;
+  filter: blur(0.5px);
+}
+
+@keyframes particle-float {
+  0%   { transform: translateY(0) scale(1);      opacity: 0; }
+  10%  { opacity: 1;                                          }
+  90%  { opacity: 1;                                          }
+  100% { transform: translateY(-320px) scale(0.4); opacity: 0; }
+}
+
+/* SPEAKING STATE — enhanced glow */
+.ana-speaking .ana-holo-img {
+  filter:
+    drop-shadow(0 0 25px rgba(0, 220, 255, 0.90))
+    drop-shadow(0 0 55px rgba(180, 100, 255, 0.60))
+    saturate(1.4) brightness(1.20);
+}
+
+.ana-speaking .ana-holo-glow {
+  animation: glow-pulse 0.9s ease-in-out infinite;
+}
+
+/* POSE ANIMATIONS applied to the whole image wrapper */
+.pose-dance    .ana-holo-img { animation: ana-float 5s ease-in-out infinite, ana-dance 0.8s ease-in-out infinite; }
+.pose-runway   .ana-holo-img { animation: ana-float 5s ease-in-out infinite, ana-sway 1.2s ease-in-out infinite;  }
+.pose-hypnotic .ana-holo-wrap { animation: hypnotic-holo 4s ease-in-out infinite; }
+
+@keyframes ana-dance {
+  0%, 100% { transform: translateX(0)    translateY(0)    rotate(0deg);   }
+  25%       { transform: translateX(-8px) translateY(-5px) rotate(-3deg);  }
+  75%       { transform: translateX(8px)  translateY(-5px) rotate(3deg);   }
+}
+
+@keyframes ana-sway {
+  0%, 100% { transform: rotate(-1deg) scale(1);    }
+  50%       { transform: rotate(1deg)  scale(1.02); }
+}
+
+@keyframes hypnotic-holo {
+  0%, 100% { filter: hue-rotate(0deg);    }
+  50%       { filter: hue-rotate(30deg);   }
+}
+</style>
+
 <div class="avatar-wrap full-body-mode" id="anaAvatarWrap">
   <div class="avatar-aura" id="anaAvatarAura"></div>
   <div class="particle-container" id="anaParticleContainer"></div>
+
   <div class="avatar-svg-wrap" id="anaAvatarSvg">
-    <svg viewBox="0 0 300 700" xmlns="http://www.w3.org/2000/svg" id="anaSvg" style="overflow:visible;">
-      <defs>
-        <!-- Skin Realism -->
-        <radialGradient id="grad-skin" cx="40%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#fff1e0" />
-          <stop offset="45%" stop-color="#f5d0b0" />
-          <stop offset="85%" stop-color="#d9966a" />
-          <stop offset="100%" stop-color="#bf7a50" />
-        </radialGradient>
+    <div class="ana-holo-wrap">
 
-        <!-- Silk Fabric -->
-        <linearGradient id="grad-dress" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#1e0a3d" />
-          <stop offset="50%" stop-color="#0f051a" />
-          <stop offset="100%" stop-color="#050208" />
-        </linearGradient>
+      <!-- Glow halo behind image -->
+      <div class="ana-holo-glow"></div>
 
-        <linearGradient id="grad-dress-hl" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#b06aff" stop-opacity="0.2" />
-          <stop offset="50%" stop-color="#b06aff" stop-opacity="0.4" />
-          <stop offset="100%" stop-color="#b06aff" stop-opacity="0.1" />
-        </linearGradient>
+      <!-- ✦ MAIN HOLOGRAPHIC IMAGE ✦ -->
+      <img
+        id="anaHoloImg"
+        class="ana-holo-img"
+        src="./ana-holographic.png"
+        alt="Ana Holographic Avatar"
+      />
 
-        <!-- Hair Details -->
-        <linearGradient id="grad-hair" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#2b1408" />
-          <stop offset="40%" stop-color="#1a0a04" />
-          <stop offset="100%" stop-color="#0d0401" />
-        </linearGradient>
+      <!-- Sweep scan line -->
+      <div class="ana-holo-scan"></div>
 
-        <filter id="rim-light">
-          <feMorphology operator="dilate" radius="0.5" in="SourceAlpha" result="dilated" />
-          <feGaussianBlur stdDeviation="3" in="dilated" result="blurred" />
-          <feFlood flood-color="#b06aff" flood-opacity="0.4" />
-          <feComposite in2="blurred" operator="in" />
-          <feComposite in="SourceGraphic" />
-        </filter>
-      </defs>
+      <!-- Ground platform glow -->
+      <div class="ana-holo-platform"></div>
 
-      <!-- RENDER GROUP -->
-      <g id="bodyGroup" filter="url(#rim-light)">
-        
-        <!-- Legs -->
-        <g id="legsGroup">
-          <g id="legL">
-            <path d="M 115 450 Q 100 520 108 580 Q 115 640 112 660 L 132 660 Q 138 640 142 580 Q 148 520 140 450 Z" fill="url(#grad-skin)" />
-            <ellipse cx="122" cy="580" rx="9" ry="5" fill="#c88060" opacity="0.2" />
-          </g>
-          <g id="legR">
-            <path d="M 160 450 Q 175 520 168 580 Q 160 640 162 660 L 180 660 Q 185 640 190 580 Q 200 520 185 450 Z" fill="url(#grad-skin)" />
-            <ellipse cx="178" cy="580" rx="9" ry="5" fill="#c88060" opacity="0.15" />
-          </g>
-        </g>
+      <!-- Floating energy particles -->
+      <div class="ana-holo-particles" id="anaHoloParticles">
+        <div class="holo-particle" style="width:3px;height:3px;background:#00e5ff;left:20%;bottom:10%;animation-duration:4.2s;animation-delay:0s;"></div>
+        <div class="holo-particle" style="width:2px;height:2px;background:#7c4dff;left:35%;bottom:5%;animation-duration:3.8s;animation-delay:0.8s;"></div>
+        <div class="holo-particle" style="width:3px;height:3px;background:#00c8ff;left:55%;bottom:15%;animation-duration:5.1s;animation-delay:1.5s;"></div>
+        <div class="holo-particle" style="width:2px;height:2px;background:#a040ff;left:70%;bottom:8%;animation-duration:4.6s;animation-delay:0.3s;"></div>
+        <div class="holo-particle" style="width:2px;height:2px;background:#00e5ff;left:80%;bottom:22%;animation-duration:3.5s;animation-delay:2.1s;"></div>
+        <div class="holo-particle" style="width:3px;height:3px;background:#60d0ff;left:12%;bottom:30%;animation-duration:6.0s;animation-delay:1.0s;"></div>
+        <div class="holo-particle" style="width:2px;height:2px;background:#ff60d8;left:88%;bottom:40%;animation-duration:5.5s;animation-delay:3.0s;"></div>
+        <div class="holo-particle" style="width:2px;height:2px;background:#00e5ff;left:45%;bottom:2%;animation-duration:4.0s;animation-delay:1.8s;"></div>
+      </div>
 
-        <!-- Torso -->
-        <g id="torsoGroup">
-          <path d="M 100 250 C 85 300 95 400 100 450 L 200 450 C 205 400 215 300 200 250 C 190 200 110 200 100 250 Z" fill="url(#grad-dress)" />
-          <path d="M 115 260 C 105 320 110 400 120 440" fill="none" stroke="url(#grad-dress-hl)" stroke-width="2.5" opacity="0.4" />
-          <path d="M 185 260 C 195 320 190 400 180 440" fill="none" stroke="url(#grad-dress-hl)" stroke-width="2.5" opacity="0.4" />
-          <path d="M 120 220 Q 150 270 180 220 L 180 200 Q 150 215 120 200 Z" fill="url(#grad-skin)" />
-          <path d="M 150 218 L 150 245" stroke="#bf7a50" stroke-width="1.5" opacity="0.3" />
-        </g>
+    </div>
 
-        <!-- Arms -->
-        <g id="armsGroup">
-          <g id="armL">
-              <path d="M 115 210 Q 80 225 65 300 Q 55 380 70 420" fill="none" stroke="url(#grad-skin)" stroke-width="12" stroke-linecap="round" />
-              <path d="M 70 420 C 65 425 68 445 75 445 C 82 445 85 425 80 420 Z" fill="url(#grad-skin)" />
-          </g>
-          <g id="armR">
-              <path d="M 185 210 Q 220 225 235 300 Q 245 380 230 420" fill="none" stroke="url(#grad-skin)" stroke-width="12" stroke-linecap="round" />
-              <path d="M 230 420 C 235 425 232 445 225 445 C 218 445 215 425 220 420 Z" fill="url(#grad-skin)"/>
-          </g>
-        </g>
-
-        <!-- Head & Hair -->
+    <!-- HIDDEN SVG: preserves all JS animation hooks (blink, lip-sync, poses) -->
+    <svg width="0" height="0" style="position:absolute;pointer-events:none;visibility:hidden;" id="anaSvg">
+      <g id="bodyGroup">
+        <g id="legsGroup"><g id="legL"></g><g id="legR"></g></g>
+        <g id="torsoGroup"></g>
+        <g id="armsGroup"><g id="armL"></g><g id="armR"></g></g>
         <g id="headGroup">
-          <rect x="138" y="175" width="24" height="45" rx="12" fill="url(#grad-skin)" />
-          <path d="M 138 210 Q 150 225 162 210" fill="none" stroke="#bf7a50" stroke-width="2" opacity="0.2" />
-          <path d="M 70 120 Q 70 30 150 25 Q 230 30 230 120 Q 225 180 210 220 L 90 220 Q 75 180 70 120 Z" fill="url(#grad-hair)" />
-          <path d="M 105 100 Q 100 160 115 195 Q 130 225 150 225 Q 170 225 185 195 Q 200 160 195 100 Q 180 70 150 70 Q 120 70 105 100 Z" fill="url(#grad-skin)" />
-          <g id="faceShading">
-              <ellipse cx="125" cy="140" rx="18" ry="14" fill="#603010" opacity="0.08" />
-              <ellipse cx="175" cy="140" rx="18" ry="14" fill="#603010" opacity="0.08" />
-              <path d="M 148 140 Q 145 165 150 170 Q 155 165 152 140" fill="#603010" opacity="0.1" />
-          </g>
           <g id="eyesGroup">
-            <path d="M 112 135 Q 128 125 144 135" fill="none" stroke="#602040" stroke-width="6" opacity="0.1" />
-            <path d="M 156 135 Q 172 125 188 135" fill="none" stroke="#602040" stroke-width="6" opacity="0.1" />
-            <circle cx="128" cy="145" r="13" fill="#fff" />
-            <circle cx="128" cy="145" r="8" fill="#7a5ce0" id="leftIris" /> 
-            <circle cx="128" cy="145" r="4" fill="#000" id="leftPupil" />
-            <circle cx="132" cy="141" r="2" fill="#fff" opacity="0.9" id="leftGlint" />
-            <circle cx="172" cy="145" r="13" fill="#fff" />
-            <circle cx="172" cy="145" r="8" fill="#7a5ce0" id="rightIris" />
-            <circle cx="172" cy="145" r="4" fill="#000" id="rightPupil" />
-            <circle cx="176" cy="141" r="2" fill="#fff" opacity="0.9" id="rightGlint" />
-            <path d="M 112 138 Q 128 125 144 138" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" id="leftLash" />
-            <path d="M 156 138 Q 172 125 188 138" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" id="rightLash" />
-            <path d="M 112 125 Q 128 115 144 125" fill="none" stroke="#2b1408" stroke-width="4.5" stroke-linecap="round" id="leftBrow" />
-            <path d="M 156 125 Q 172 115 188 125" fill="none" stroke="#2b1408" stroke-width="4.5" stroke-linecap="round" id="rightBrow" />
-            <rect id="leftLid" x="110" y="130" width="36" height="0" fill="url(#grad-skin)" />
-            <rect id="rightLid" x="154" y="130" width="36" height="0" fill="url(#grad-skin)" />
+            <rect id="leftLid"   x="0" y="0" width="0" height="0"/>
+            <rect id="rightLid"  x="0" y="0" width="0" height="0"/>
+            <circle id="leftPupil"  cx="0" cy="0" r="0"/>
+            <circle id="rightPupil" cx="0" cy="0" r="0"/>
           </g>
           <g id="mouthGroup">
-            <path id="upperLip" d="M 135 195 Q 150 188 165 195 Q 150 202 135 195 Z" fill="#d03060" />
-            <path id="lowerLip" d="M 134 195 Q 150 210 166 195 Q 150 198 134 195 Z" fill="#b02048" />
-            <ellipse id="mouthInner" cx="150" cy="200" rx="0" ry="0" fill="#2a0510" opacity="0.9"/>
-            <rect id="teethTop" x="140" y="196" width="20" height="0" rx="2" fill="white" opacity="0.95"/>
-            <ellipse cx="150" cy="202" rx="10" ry="3" fill="#fff" opacity="0.3" id="lipGloss" />
+            <path    id="upperLip"  d=""/>
+            <path    id="lowerLip"  d=""/>
+            <ellipse id="mouthInner" cx="0" cy="0" rx="0" ry="0"/>
+            <rect    id="teethTop"   x="0" y="0" width="0" height="0"/>
           </g>
-          <!-- Hair Strands (short, reveals shoulders) -->
-          <path d="M 105 100 Q 95 180 85 220" fill="none" stroke="url(#grad-hair)" stroke-width="4" opacity="0.8" />
-          <path d="M 195 100 Q 205 180 215 220" fill="none" stroke="url(#grad-hair)" stroke-width="4" opacity="0.8" />
-          <path d="M 150 70 Q 140 100 130 150" fill="none" stroke="#4a2a18" stroke-width="1.5" opacity="0.3" />
         </g>
       </g>
     </svg>
   </div>
 </div>
+
 <div class="voice-viz" id="anaVoiceViz">
   <div class="voice-bar" style="height: 10px;"></div>
   <div class="voice-bar" style="height: 20px;"></div>
@@ -159,8 +277,9 @@ class AnaCharacter {
     if (!this.container) return;
     this.container.innerHTML = ANA_SVG_TEMPLATE;
 
-    // Elements
+    // Main wrapper
     this.avatarWrap = document.getElementById('anaAvatarWrap');
+    // Hidden SVG hooks (for blink / lip-sync compatibility)
     this.head = document.getElementById('headGroup');
     this.body = document.getElementById('bodyGroup');
     this.armL = document.getElementById('armL');
@@ -173,6 +292,8 @@ class AnaCharacter {
     this.rightLid = document.getElementById('rightLid');
     this.particleContainer = document.getElementById('anaParticleContainer');
     this.voiceViz = document.getElementById('anaVoiceViz');
+    // Image reference for glitch effects
+    this.holoImg = document.getElementById('anaHoloImg');
   }
 
   initExpressiveness() {
@@ -186,7 +307,7 @@ class AnaCharacter {
       }
     }, 5000);
 
-    // Main animation loop
+    // Main animation loop (drives pose + particles)
     this.frameInterval = setInterval(() => {
       this.frame = (this.frame + 1) % 120;
       this.updateFrame();
@@ -202,65 +323,38 @@ class AnaCharacter {
     const t = this.frame / 120;
     const pi2 = Math.PI * 2;
     const s = Math.sin(t * pi2);
-    const c = Math.cos(t * pi2);
-    const s2 = Math.sin(t * pi2 * 2);
     const absS = Math.abs(s);
 
-    let headT = "";
-    let bodyT = "";
-    let armLT = "";
-    let armRT = "";
-    let legsT = "";
-
-    // Reset origins
-    this.head.style.transformOrigin = "150px 180px";
-    this.body.style.transformOrigin = "150px 350px";
-    this.armL.style.transformOrigin = "115px 210px";
-    this.armR.style.transformOrigin = "185px 210px";
-    this.legs.style.transformOrigin = "150px 450px";
-
+    // Spawn emoji particles for expressive poses
     switch (this.anim) {
-      case "idle":
-        headT = `translateY(${s * 3}px) rotate(${s * 1}deg)`;
-        bodyT = `translateY(${c * 1}px)`;
-        armLT = `rotate(${s * 2}deg)`;
-        armRT = `rotate(${-s * 2}deg)`;
-        break;
       case "smile":
-        headT = `scale(${1 + absS * 0.02}) translateY(${s * 2}px)`;
-        bodyT = `rotate(${s * 0.5}deg)`;
         if (this.frame % 40 === 0) this.spawnEmoji("✨");
         break;
       case "dance":
-        bodyT = `translateX(${s * 15}px) rotate(${s * 6}deg) translateY(${absS * -5}px)`;
-        headT = `rotate(${-s * 3}deg) translateX(${-s * 5}px)`;
-        armLT = `rotate(${s * 25 - 10}deg)`;
-        armRT = `rotate(${-s * 25 + 10}deg)`;
-        legsT = `skewX(${s * 8}deg)`;
         if (this.frame % 20 === 0) this.spawnEmoji(this.frame % 40 < 20 ? "🎵" : "🎶");
         break;
       case "runway":
-        headT = `rotate(${s * 3}deg) translateY(${absS * -2}px)`;
-        bodyT = `scale(${1 + absS * 0.015})`;
-        armRT = `rotate(${-15 + s * 10}deg) translateX(${s * 2}px)`;
-        armLT = `rotate(${10 + s * 5}deg)`;
         if (this.frame % 30 === 0) this.spawnEmoji("👠");
         break;
       case "wink":
-        headT = `rotate(${s * 4}deg) scale(1.02)`;
-        if (this.frame === 0) { this.spawnEmoji("😉"); this.blink(); }
-        break;
-      case "bow":
-        bodyT = `scaleY(${1 - absS * 0.05}) translateY(${absS * 10}px)`;
-        headT = `translateY(${absS * 15}px) rotate(${absS * 8}deg)`;
+        if (this.frame === 0) { this.spawnEmoji("😉"); this.triggerGlitch(); }
         break;
     }
 
-    if (headT) this.head.style.transform = headT;
-    if (bodyT) this.body.style.transform = bodyT;
-    if (armLT) this.armL.style.transform = armLT;
-    if (armRT) this.armR.style.transform = armRT;
-    if (legsT) this.legs.style.transform = legsT;
+    // Apply gentle floating offset to the holo wrap for image-based poses
+    if (this.holoImg) {
+      if (this.anim === "bow") {
+        this.holoImg.style.transform = `translateY(${absS * 12}px) rotate(${absS * 3}deg)`;
+      } else {
+        this.holoImg.style.transform = '';
+      }
+    }
+  }
+
+  triggerGlitch() {
+    if (!this.holoImg) return;
+    this.holoImg.classList.add('glitch');
+    setTimeout(() => this.holoImg.classList.remove('glitch'), 200);
   }
 
   spawnEmoji(char) {
@@ -283,13 +377,14 @@ class AnaCharacter {
   }
 
   blink() {
-    if (!this.leftLid || !this.rightLid) return;
-    this.leftLid.setAttribute('height', '20');
-    this.rightLid.setAttribute('height', '20');
-    setTimeout(() => {
-      this.leftLid.setAttribute('height', '0');
-      this.rightLid.setAttribute('height', '0');
-    }, 120);
+    // For image avatar: trigger a quick opacity flicker on the image
+    if (this.holoImg) {
+      this.holoImg.style.opacity = '0.6';
+      setTimeout(() => { if (this.holoImg) this.holoImg.style.opacity = ''; }, 90);
+    }
+    // Keep SVG lid hooks working if they ever reference real elements
+    if (this.leftLid) this.leftLid.setAttribute('height', '0');
+    if (this.rightLid) this.rightLid.setAttribute('height', '0');
   }
 
   setPose(pose) {
@@ -312,8 +407,6 @@ class AnaCharacter {
     if (this.avatarWrap) this.avatarWrap.classList.remove('ana-speaking');
     if (this.voiceViz) this.voiceViz.classList.remove('active');
     this.stopLipSync();
-
-    // Trigger Fluid Communication event
     document.dispatchEvent(new CustomEvent('anaFinishedSpeaking'));
   }
 
@@ -323,31 +416,31 @@ class AnaCharacter {
     this.lipSyncInterval = setInterval(() => {
       p++;
       const open = Math.abs(Math.sin(p * 0.45)) * 0.8 + Math.abs(Math.sin(p * 0.1)) * 0.2;
-      const rx = open * 18;
-      const ry = open * 15;
-      const tH = open * 8;
-      const dropY = open * 12;
 
+      // For image-based: animate glow intensity to simulate talking
+      if (this.holoImg) {
+        const glow = 18 + open * 22;
+        const glow2 = 40 + open * 30;
+        this.holoImg.style.filter = `
+          drop-shadow(0 0 ${glow}px rgba(0,220,255,${0.7 + open * 0.3}))
+          drop-shadow(0 0 ${glow2}px rgba(180,100,255,${0.4 + open * 0.3}))
+          saturate(${1.15 + open * 0.25}) brightness(${1.08 + open * 0.15})
+        `;
+      }
+
+      // SVG hooks (kept for compatibility)
       if (this.mouthInner) {
-        this.mouthInner.setAttribute('rx', rx.toFixed(1));
-        this.mouthInner.setAttribute('ry', ry.toFixed(1));
-        this.mouthInner.setAttribute('cy', (200 + dropY / 4).toFixed(1));
+        this.mouthInner.setAttribute('rx', (open * 18).toFixed(1));
+        this.mouthInner.setAttribute('ry', (open * 15).toFixed(1));
       }
-
-      if (this.teethTop) {
-        this.teethTop.setAttribute('height', open > 0.3 ? tH.toFixed(1) : "0");
-        this.teethTop.setAttribute('width', (rx * 1.8).toFixed(1));
-        this.teethTop.setAttribute('x', (150 - rx * 0.9).toFixed(1));
-      }
-
-      if (this.lowerLip) {
-        this.lowerLip.setAttribute('d', `M 134 195 Q 150 ${210 + dropY} 166 195 Q 150 ${198 + dropY / 2} 134 195 Z`);
-      }
+      if (this.teethTop) this.teethTop.setAttribute('height', open > 0.3 ? (open * 8).toFixed(1) : "0");
+      if (this.lowerLip) this.lowerLip.setAttribute('d', `M 134 195 Q 150 ${210 + open * 12} 166 195 Q 150 ${198 + open * 6} 134 195 Z`);
     }, 60);
   }
 
   stopLipSync() {
     if (this.lipSyncInterval) { clearInterval(this.lipSyncInterval); this.lipSyncInterval = null; }
+    if (this.holoImg) this.holoImg.style.filter = '';
     if (this.mouthInner) { this.mouthInner.setAttribute('rx', '0'); this.mouthInner.setAttribute('ry', '0'); }
     if (this.teethTop) this.teethTop.setAttribute('height', '0');
     if (this.lowerLip) this.lowerLip.setAttribute('d', 'M 134 195 Q 150 210 166 195 Q 150 198 134 195 Z');

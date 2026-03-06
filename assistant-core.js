@@ -113,10 +113,10 @@ class AssistantCore {
     }
 
     setupVisualLife() {
-        if (!document.querySelector('link[href="/ana-theme.css"]')) {
+        if (!document.querySelector('link[href$="ana-theme.css"]')) {
             const style = document.createElement('link');
             style.rel = 'stylesheet';
-            style.href = '/ana-theme.css';
+            style.href = './ana-theme.css';
             document.head.appendChild(style);
         }
     }
