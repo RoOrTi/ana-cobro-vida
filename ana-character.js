@@ -21,7 +21,6 @@ const ANA_SVG_TEMPLATE = `
   box-sizing: border-box;
 }
 
-/* ✦ RESPIRACIÓN VOLUMÉTRICA EN CSS (Secuencia 1-2-3-2-1) ✦ */
 .ana-holo-img-wrap {
   position: relative;
   width: 100%;
@@ -29,28 +28,22 @@ const ANA_SVG_TEMPLATE = `
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: ana-sequence-breathe 4s ease-in-out infinite; 
-  transform-origin: 50% 50%; /* <--- CENTRO ORIGEN (X=50% Y=50%) */
   z-index: 2;
 }
 
-@keyframes ana-sequence-breathe {
-  /* <--- COORDENADAS MAGNÉTICAS ---> 
-     scale(2.5) = Zoom Base (2.5x)
-     translate(0px, 30px) = Eje(X, Y). Valores Positivos en Y bajan la imagen, Negativos la suben.
-  */
-  0%, 100% { transform: scale(2.5) translate(0px, 30px) scaleY(1)    scaleX(1);    } 
-  25%, 75% { transform: scale(2.5) translate(0px, 30px) scaleY(1.015) scaleX(1.005); } 
-  50%      { transform: scale(2.5) translate(0px, 30px) scaleY(1.03)  scaleX(1.015);  } 
-}
-
-/* MAIN IMAGE BASE */
+/* MAIN IMAGE BASE (Slideshow Layers) */
 .ana-holo-img {
-  position: relative;
+  position: absolute; /* Superpuestas perfectamente */
+  top: 0; left: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* <--- ENCUADRE: Contain impide recortes, Cover rellena ignorando bordes */
-  object-position: 50% 50%; /* <--- POSICIÓN INTERNA: (X=50% Y=50%) */
+  object-fit: contain; /* ENCUADRE: Contain impide recortes */
+  object-position: 50% 50%; /* POSICIÓN INTERNA: Centro */
+  
+  /* <--- COORDENADAS MAGNÉTICAS FIJAS ---> */
+  transform-origin: 50% 50%;
+  transform: scale(2.5) translate(0px, 30px);
+  
   filter:
     drop-shadow(0 0 18px rgba(0, 200, 255, 0.30))
     saturate(1.15) brightness(1.08); /* Colores radiantes, cero interferencias */
@@ -59,21 +52,16 @@ const ANA_SVG_TEMPLATE = `
   -webkit-mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
   mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
   
-  transition: opacity 0.1s ease-out, filter 0.1s ease-out, transform 0.1s ease-out;
-}
-
-/* BLINK LAYER OVERLAY */
-.ana-blink-layer {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  opacity: 0;
-  transition: opacity 0.05s ease-in-out !important; /* Más rápido para parpadeo vivo */
+  opacity: 0; /* Inician ocultas */
+  transition: opacity 1s ease-in-out; /* Transición fotográfica suave y serena */
   pointer-events: none;
 }
-.ana-blink-layer.active {
+
+/* Capa visible del Slideshow */
+.ana-holo-img.active {
   opacity: 1;
 }
+
 
 /* SPEAKING STATE */
 .ana-speaking .ana-holo-img {
@@ -88,9 +76,9 @@ const ANA_SVG_TEMPLATE = `
     <div class="ana-holo-wrap">
       <div class="ana-holo-img-wrap" id="anaImgWrap">
         <!-- BASE: Ojos Abiertos -->
-        <img id="anaHoloImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Holographic Avatar" />
-        <!-- BLINK LAYER: Ojos Cerrados (Mismo ajuste) -->
-        <img id="anaBlinkImg" class="ana-holo-img ana-blink-layer" src="./ana-blink.png" alt="Ana Blinking" />
+        <img id="anaHoloImg" class="ana-holo-img active" src="./ana-holographic.png" alt="Ana Holographic Avatar" />
+        <!-- BLINK LAYER: Ojos Cerrados -->
+        <img id="anaBlinkImg" class="ana-holo-img" src="./ana-blink.png" alt="Ana Blinking" />
       </div>
     </div>
   </div>
@@ -101,10 +89,10 @@ class AnaCharacter {
   constructor(container) {
     this.container = container;
     this.lipSyncInterval = null;
-    this.blinkTimeout = null;
+    this.slideshowInterval = null;
     this.isSpeaking = false;
     this.render();
-    this.scheduleBlink();
+    this.startSlideshow();
   }
 
   render() {
@@ -113,26 +101,29 @@ class AnaCharacter {
 
     this.avatarWrap = document.getElementById('anaAvatarWrap');
     this.holoImgWrap = document.getElementById('anaImgWrap');
-    this.holoImg = document.getElementById('anaHoloImg');
-    this.blinkImg = document.getElementById('anaBlinkImg');
+    this.holoImg = document.getElementById('anaHoloImg'); // Ojos Abiertos
+    this.blinkImg = document.getElementById('anaBlinkImg'); // Ojos Cerrados
   }
 
-  scheduleBlink() {
-    // Frecuencia natural: parpadeo entre 2.5s y 7.5s
-    const next = 2500 + Math.random() * 5000;
-    this.blinkTimeout = setTimeout(() => {
-      this.blink();
-      this.scheduleBlink();
-    }, next);
-  }
+  startSlideshow() {
+    // Implementación exacta de la presentación de diapositivas requerida:
+    // Ojos abiertos, wait 5s, Ojos cerrados, wait 5s. Sin distorsión CSS.
+    let showOpenEyes = true;
 
-  blink() {
-    if (this.blinkImg) {
-      // Activa capa de ojos cerrados
-      this.blinkImg.classList.add('active');
-      // La desactiva rápidamente (150ms equivale a un parpadeo de humano descansado)
-      setTimeout(() => this.blinkImg.classList.remove('active'), 150);
-    }
+    // Inicia asegurando que los ojos abiertos están visibles
+    if (this.holoImg) this.holoImg.classList.add('active');
+
+    this.slideshowInterval = setInterval(() => {
+      showOpenEyes = !showOpenEyes;
+
+      if (showOpenEyes) {
+        if (this.blinkImg) this.blinkImg.classList.remove('active');
+        if (this.holoImg) this.holoImg.classList.add('active');
+      } else {
+        if (this.holoImg) this.holoImg.classList.remove('active');
+        if (this.blinkImg) this.blinkImg.classList.add('active');
+      }
+    }, 5000);
   }
 
   startSpeaking() {
