@@ -87,7 +87,7 @@ const ANA_SVG_TEMPLATE = `
       <div class="ana-holo-wrap-inner" style="position: relative; width: 100%; height: 100%;">
         <!-- DIAPOSITIVAS: 1(Open), 2(Half), 3(Closed) -->
         <img id="anaHoloImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Open" />
-        <img id="anaHalfImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Half" /> 
+        <img id="anaHalfImg" class="ana-holo-img" src="./ana-half.png" alt="Ana Half" /> 
         <img id="anaBlinkImg" class="ana-holo-img" src="./ana-blink.png" alt="Ana Closed" />
       </div>
     </div>
