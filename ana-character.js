@@ -17,7 +17,7 @@ const ANA_SVG_TEMPLATE = `
   align-items: center; /* Centrar verticalmente */
   justify-content: center;
   overflow: hidden;
-  padding: 20px; /* Margen de 20px en todos los lados */
+  padding: 10px; /* <--- MARGEN: 10px */
   box-sizing: border-box;
 }
 
@@ -30,15 +30,18 @@ const ANA_SVG_TEMPLATE = `
   align-items: center;
   justify-content: center;
   animation: ana-sequence-breathe 4s ease-in-out infinite; 
-  transform-origin: bottom center;
+  transform-origin: 50% 50%; /* <--- CENTRO ORIGEN (X=50% Y=50%) */
   z-index: 2;
 }
 
 @keyframes ana-sequence-breathe {
-  /* Escala 2 y respiración */
-  0%, 100% { transform: scale(2) scaleY(1)    scaleX(1);    } 
-  25%, 75% { transform: scale(2) scaleY(1.015) scaleX(1.005); } 
-  50%      { transform: scale(2) scaleY(1.03)  scaleX(1.015);  } 
+  /* <--- COORDENADAS MAGNÉTICAS ---> 
+     scale(2.5) = Zoom Base (2.5x)
+     translate(0px, 30px) = Eje(X, Y). Valores Positivos en Y bajan la imagen, Negativos la suben.
+  */
+  0%, 100% { transform: scale(2.5) translate(0px, 30px) scaleY(1)    scaleX(1);    } 
+  25%, 75% { transform: scale(2.5) translate(0px, 30px) scaleY(1.015) scaleX(1.005); } 
+  50%      { transform: scale(2.5) translate(0px, 30px) scaleY(1.03)  scaleX(1.015);  } 
 }
 
 /* MAIN IMAGE BASE */
@@ -46,8 +49,8 @@ const ANA_SVG_TEMPLATE = `
   position: relative;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Contain asegura que nunca se recorte la cabeza ni los bordes */
-  object-position: center; /* Centrado perfecto */
+  object-fit: contain; /* <--- ENCUADRE: Contain impide recortes, Cover rellena ignorando bordes */
+  object-position: 50% 50%; /* <--- POSICIÓN INTERNA: (X=50% Y=50%) */
   filter:
     drop-shadow(0 0 18px rgba(0, 200, 255, 0.30))
     saturate(1.15) brightness(1.08); /* Colores radiantes, cero interferencias */
