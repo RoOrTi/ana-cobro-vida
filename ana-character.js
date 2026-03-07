@@ -62,6 +62,19 @@ const ANA_SVG_TEMPLATE = `
   transition: opacity 0.1s ease-out, filter 0.1s ease-out, transform 0.1s ease-out;
 }
 
+/* BLINK LAYER OVERLAY */
+.ana-blink-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  transition: opacity 0.05s ease-in-out !important; /* Más rápido para parpadeo vivo */
+  pointer-events: none;
+}
+.ana-blink-layer.active {
+  opacity: 1;
+}
+
 /* SPEAKING STATE */
 .ana-speaking .ana-holo-img {
   filter:
@@ -74,7 +87,10 @@ const ANA_SVG_TEMPLATE = `
   <div class="avatar-svg-wrap" id="anaAvatarSvg">
     <div class="ana-holo-wrap">
       <div class="ana-holo-img-wrap" id="anaImgWrap">
+        <!-- BASE: Ojos Abiertos -->
         <img id="anaHoloImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Holographic Avatar" />
+        <!-- BLINK LAYER: Ojos Cerrados (Mismo ajuste) -->
+        <img id="anaBlinkImg" class="ana-holo-img ana-blink-layer" src="./ana-blink.png" alt="Ana Blinking" />
       </div>
     </div>
   </div>
@@ -85,8 +101,10 @@ class AnaCharacter {
   constructor(container) {
     this.container = container;
     this.lipSyncInterval = null;
+    this.blinkTimeout = null;
     this.isSpeaking = false;
     this.render();
+    this.scheduleBlink();
   }
 
   render() {
@@ -96,6 +114,25 @@ class AnaCharacter {
     this.avatarWrap = document.getElementById('anaAvatarWrap');
     this.holoImgWrap = document.getElementById('anaImgWrap');
     this.holoImg = document.getElementById('anaHoloImg');
+    this.blinkImg = document.getElementById('anaBlinkImg');
+  }
+
+  scheduleBlink() {
+    // Frecuencia natural: parpadeo entre 2.5s y 7.5s
+    const next = 2500 + Math.random() * 5000;
+    this.blinkTimeout = setTimeout(() => {
+      this.blink();
+      this.scheduleBlink();
+    }, next);
+  }
+
+  blink() {
+    if (this.blinkImg) {
+      // Activa capa de ojos cerrados
+      this.blinkImg.classList.add('active');
+      // La desactiva rápidamente (150ms equivale a un parpadeo de humano descansado)
+      setTimeout(() => this.blinkImg.classList.remove('active'), 150);
+    }
   }
 
   startSpeaking() {
