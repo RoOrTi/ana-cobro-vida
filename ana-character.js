@@ -52,13 +52,21 @@ const ANA_SVG_TEMPLATE = `
   -webkit-mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
   mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
   
-  opacity: 0; /* Inician ocultas */
-  transition: opacity 1s ease-in-out; /* Transición fotográfica suave y serena */
   pointer-events: none;
 }
 
-/* Capa visible del Slideshow */
-.ana-holo-img.active {
+/* Base siempre visible */
+#anaHoloImg {
+  opacity: 1; 
+}
+
+/* Capa de ojos cerrados que transiciona encima */
+#anaBlinkImg {
+  opacity: 0;
+  transition: opacity 1s ease-in-out; /* Transición muy suave hacia la 2da imagen */
+}
+
+#anaBlinkImg.active {
   opacity: 1;
 }
 
@@ -106,22 +114,20 @@ class AnaCharacter {
   }
 
   startSlideshow() {
-    // Implementación exacta de la presentación de diapositivas requerida:
-    // Ojos abiertos, wait 5s, Ojos cerrados, wait 5s. Sin distorsión CSS.
-    let showOpenEyes = true;
+    // La imagen de ojos abiertos (holoImg) SIEMPRE está ahí. Su opacidad no cambia.
+    // Nosotros simplemente mostramos suavemente la de "ojos cerrados" por encima de ella.
+    let showClosedEyes = false;
 
-    // Inicia asegurando que los ojos abiertos están visibles
-    if (this.holoImg) this.holoImg.classList.add('active');
+    // Inicia asegurando que la capa blinkImg está oculta (transparente)
+    if (this.blinkImg) this.blinkImg.classList.remove('active');
 
     this.slideshowInterval = setInterval(() => {
-      showOpenEyes = !showOpenEyes;
+      showClosedEyes = !showClosedEyes;
 
-      if (showOpenEyes) {
-        if (this.blinkImg) this.blinkImg.classList.remove('active');
-        if (this.holoImg) this.holoImg.classList.add('active');
-      } else {
-        if (this.holoImg) this.holoImg.classList.remove('active');
+      if (showClosedEyes) {
         if (this.blinkImg) this.blinkImg.classList.add('active');
+      } else {
+        if (this.blinkImg) this.blinkImg.classList.remove('active');
       }
     }, 5000);
   }
