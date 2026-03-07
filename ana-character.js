@@ -17,7 +17,7 @@ const ANA_SVG_TEMPLATE = `
   align-items: center; /* Centrar verticalmente */
   justify-content: center;
   overflow: hidden;
-  padding: 80px; /* Margen de 80px en todos los lados */
+  padding: 20px; /* Margen de 20px en todos los lados */
   box-sizing: border-box;
 }
 
@@ -35,10 +35,10 @@ const ANA_SVG_TEMPLATE = `
 }
 
 @keyframes ana-sequence-breathe {
-  /* Escala 1 para ver el cuerpo entero proporcionalmente */
-  0%, 100% { transform: scale(1) scaleY(1)    scaleX(1);    } 
-  25%, 75% { transform: scale(1) scaleY(1.015) scaleX(1.005); } 
-  50%      { transform: scale(1) scaleY(1.03)  scaleX(1.015);  } 
+  /* Escala 2 y respiración */
+  0%, 100% { transform: scale(2) scaleY(1)    scaleX(1);    } 
+  25%, 75% { transform: scale(2) scaleY(1.015) scaleX(1.005); } 
+  50%      { transform: scale(2) scaleY(1.03)  scaleX(1.015);  } 
 }
 
 /* MAIN IMAGE BASE */
