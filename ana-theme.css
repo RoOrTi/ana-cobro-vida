@@ -108,10 +108,9 @@
 
 /* Full Body Mode Evolution Adjustments */
 .full-body-mode .avatar-wrap {
-    width: 240px;
-    height: 440px;
-    /* Reduced to fit viewport nicely */
-    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    margin: 0;
 }
 
 .full-body-mode .avatar-svg-wrap {
@@ -442,27 +441,28 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 40px 30px;
+    justify-content: flex-end;
+    padding: 0;
     border-right: 1px solid var(--ana-border);
     background: radial-gradient(circle at 50% 40%, rgba(0, 150, 255, 0.08) 0%, rgba(90, 40, 200, 0.04) 50%, transparent 70%),
         linear-gradient(180deg, rgba(6, 10, 28, 0.95) 0%, rgba(4, 6, 18, 0.98) 100%);
     position: relative;
+    overflow: hidden; /* Oculta cualquier rebalse de la ropa si se amplia mucho */
 }
 
 .ana-avatar-container {
-    width: 240px;
-    height: 420px;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    margin: 0 auto;
+    margin: 0;
 }
 
 .avatar-wrap {
     position: relative;
-    width: 220px;
-    height: 400px;
+    width: 100%;
+    height: 100%;
     transform-origin: bottom center;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
