@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alineador Visual de Ana</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    .slide-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .slide {
+      position: absolute;
+      opacity: 0;
+      transition: opacity 0s;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: 50% 50%;
+      transform-origin: 50% 50%;
+    }
+
+    .slide.active {
+      opacity: 1;
+    }
+
+    .status {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      border-radius: 8px;
+      z-index: 100;
+      border: 1px solid #333;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      /* Movido a la derecha */
+      background: rgba(0, 0, 0, 0.95);
+      padding: 20px;
+      border-radius: 12px;
+      z-index: 101;
+      border: 1px solid #555;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 350px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input[type=range] {
+      width: 100%;
+    }
+
+    .result {
+      margin-top: 5px;
+      padding: 15px;
+      background: #000;
+      border: 1px solid #0f0;
+      font-family: monospace;
+      color: #0f0;
+      text-align: center;
+      font-size: 16px;
+      user-select: all;
+      border-radius: 6px;
+    }
+
+    .manual-slide {
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+    }
+
+    button {
+      flex: 1;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    button.active {
+      background: #007bff;
+      border-color: #0056b3;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="status" id="statusBox">Cargando...</div>
+
+  <div class="slide-container">
+    <img id="slide1" class="slide active" src="ana-holographic.png" alt="Slide 1 - Abierta">
+    <img id="slide2" class="slide" src="ana-half.png" alt="Slide 2 - Semi">
+    <img id="slide3" class="slide" src="ana-blink.png" alt="Slide 3 - Cerrada">
+  </div>
+
+  <div class="controls">
+    <div class="manual-slide">
+      <button id="btn1" class="active" onclick="selectSlide(0)">1. Abierta</button>
+      <button id="btn2" onclick="selectSlide(1)">2. Semi</button>
+      <button id="btn3" onclick="selectSlide(2)">3. Cerrada</button>
+    </div>
+    <div class="control-group">
+      <label><span>Escala (Zoom)</span> <span id="valScale">2.2</span></label>
+      <input type="range" id="inpScale" min="0.5" max="10" step="0.05" value="2.2" oninput="updateTransform()">
+    </div>
+    <div class="control-group">
+      <label><span>Posición X (Izquierda/Derecha)</span> <span id="valX">0px</span></label>
+      <input type="range" id="inpX" min="-500" max="500" step="1" value="0" oninput="updateTransform()">
+    </div>
+    <div class="control-group">
+      <label><span>Posición Y (Arriba/Abajo)</span> <span id="valY">10px</span></label>
+      <input type="range" id="inpY" min="-500" max="500" step="1" value="10" oninput="updateTransform()">
+    </div>
+
+    <div style="text-align:center; font-size: 12px; color: #aaa;">Copia este código y envíaselo a Antigravity:</div>
+    <div class="result" id="resultCode">scale(2.2) translate(0px, 10px)</div>
+  </div>
+
+  <script>
+    const slides = [
+      document.getElementById('slide1'),
+      document.getElementById('slide2'),
+      document.getElementById('slide3')
+    ];
+    const btns = [
+      document.getElementById('btn1'),
+      document.getElementById('btn2'),
+      document.getElementById('btn3')
+    ];
+
+    let currentSlideIndex = 0;
+
+    // Todas empiezan exactamente igual
+    const transforms = [
+      { scale: 2.2, x: 0, y: 10 },
+      { scale: 2.2, x: 0, y: 10 },
+      { scale: 2.2, x: 0, y: 10 }
+    ];
+
+    function selectSlide(index) {
+      currentSlideIndex = index;
+
+      slides.forEach((s, i) => s.classList.toggle('active', i === index));
+      btns.forEach((b, i) => b.classList.toggle('active', i === index));
+
+      const names = ["#1 - Ojos Abiertos", "#2 - Ojos Semi-Abiertos", "#3 - Ojos Cerrados"];
+      document.getElementById('statusBox').innerText = "Viendo imagen: " + names[index];
+
+      const t = transforms[index];
+      document.getElementById('inpScale').value = t.scale;
+      document.getElementById('inpX').value = t.x;
+      document.getElementById('inpY').value = t.y;
+
+      updateTransformDisplay(t.scale, t.x, t.y);
+    }
+
+    function updateTransform() {
+      const s = document.getElementById('inpScale').value;
+      const x = document.getElementById('inpX').value;
+      const y = document.getElementById('inpY').value;
+
+      transforms[currentSlideIndex] = { scale: s, x: x, y: y };
+
+      updateTransformDisplay(s, x, y);
+    }
+
+    function updateTransformDisplay(s, x, y) {
+      document.getElementById('valScale').innerText = s;
+      document.getElementById('valX').innerText = x + 'px';
+      document.getElementById('valY').innerText = y + 'px';
+
+      const transformStr = `scale(${s}) translate(${x}px, ${y}px)`;
+      slides[currentSlideIndex].style.transform = transformStr;
+
+      // Mostrar el texto listo para copiar al chat
+      document.getElementById('resultCode').innerText = `scale(${s}) translate(${x}px, ${y}px)`;
+    }
+
+    selectSlide(0);
+    slides.forEach((s, i) => {
+      s.style.transform = `scale(${transforms[i].scale}) translate(${transforms[i].x}px, ${transforms[i].y}px)`;
+    });
+
+  </script>
+</body>
+
+</html>

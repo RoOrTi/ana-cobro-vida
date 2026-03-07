@@ -42,9 +42,8 @@ const ANA_SVG_TEMPLATE = `
   
   /* <--- COORDENADAS MAGNÉTICAS ---> */
   transform-origin: 50% 50%;
-  /* Eliminamos distorsión: Mantenemos un zoom limpio sin abusar del scale si no es necesario,
-     pero respetamos el zoom del usuario si lo prefiere. Bajamos un poco el scale a 2.2 para mayor nitidez */
-  transform: scale(2.2) translate(0px, 10px) translateY(var(--ana-anim-y, 0px));
+  /* Aplicamos los valores exactos definidos por testeo manual */
+  transform: scale(1) translate(0px, 10px) translateY(var(--ana-anim-y, 0px));
   
   /* Eliminamos saturate y brightness que causan "ruido" o distorsión en la piel */
   filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
@@ -75,10 +74,6 @@ const ANA_SVG_TEMPLATE = `
 /* Capa - Ojos Cerrados */
 #anaBlinkImg { 
   z-index: 3;
-  /* AJUSTE MAGNÉTICO: La imagen ana-blink.png tiene otro aspect ratio y escala.
-     Usamos matrix para alineación exacta (escala 6.1 y offsets específicos) 
-     y sumamos el movimiento de animación */
-  transform: matrix(6.1, 0, 0, 6.1, 203, 67.4) translateY(var(--ana-anim-y, 0px));
 }
 
 .ana-holo-img.active {
