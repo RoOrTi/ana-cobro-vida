@@ -69,11 +69,16 @@ const ANA_SVG_TEMPLATE = `
 /* Capa - Ojos Semi-Abiertos */
 #anaHalfImg {
   z-index: 2;
+  /* El transform se hereda de la clase base porque ana-holographic.png es 1:1 */
 }
 
 /* Capa - Ojos Cerrados */
 #anaBlinkImg { 
   z-index: 3;
+  /* AJUSTE MAGNÉTICO: La imagen ana-blink.png tiene otro aspect ratio y escala.
+     Usamos matrix para alineación exacta (escala 6.1 y offsets específicos) 
+     y sumamos el movimiento de animación */
+  transform: matrix(6.1, 0, 0, 6.1, 203, 67.4) translateY(var(--ana-anim-y, 0px));
 }
 
 .ana-holo-img.active {
@@ -84,10 +89,10 @@ const ANA_SVG_TEMPLATE = `
 <div class="avatar-wrap full-body-mode" id="anaAvatarWrap">
   <div class="avatar-svg-wrap" id="anaAvatarSvg">
     <div class="ana-holo-wrap" id="anaAnimContainer">
-      <div class="ana-holo-img-wrap" id="anaImgWrap">
+      <div class="ana-holo-wrap-inner" style="position: relative; width: 100%; height: 100%;">
         <!-- DIAPOSITIVAS: 1(Open), 2(Half), 3(Closed) -->
         <img id="anaHoloImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Open" />
-        <img id="anaHalfImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Half" /> <!-- Placeholder hasta ana-half.png -->
+        <img id="anaHalfImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Half" /> 
         <img id="anaBlinkImg" class="ana-holo-img" src="./ana-blink.png" alt="Ana Closed" />
       </div>
     </div>
@@ -99,11 +104,11 @@ class AnaCharacter {
   constructor(container) {
     this.container = container;
     this.lifeCycleInterval = null;
-    this.slideshowInterval = null;
+    this.blinkTimeout = null;
     this.isSpeaking = false;
     this.currentSlide = 0; // 0=Open, 1=Half, 2=Closed
     this.render();
-    this.startSlideshow();
+    this.startBlinking();
     this.startLifeCycle();
   }
 
@@ -121,12 +126,40 @@ class AnaCharacter {
     this.updateSlides();
   }
 
-  startSlideshow() {
-    // Ciclo de 15 segundos total (5s cada una)
-    this.slideshowInterval = setInterval(() => {
-      this.currentSlide = (this.currentSlide + 1) % 3;
+  /**
+   * Ciclo de Parpadeo Natural (No Lineal)
+   * Los ojos permanecen abiertos la mayor parte del tiempo.
+   * El parpadeo es una secuencia rápida: Abierto -> Medio -> Cerrado -> Medio -> Abierto.
+   */
+  startBlinking() {
+    const blinkSequence = async () => {
+      // 1. Ojos Abiertos (Tiempo aleatorio entre 1 y 2 segundos)
+      this.currentSlide = 0;
       this.updateSlides();
-    }, 5000);
+      const waitTime = 1000 + Math.random() * 1000;
+
+      this.blinkTimeout = setTimeout(async () => {
+        // 2. Ojos Semi-Abiertos (Rápido: 100ms)
+        this.currentSlide = 1;
+        this.updateSlides();
+        await new Promise(r => setTimeout(r, 100));
+
+        // 3. Ojos Cerrados (1.5 segundos como solicitó el usuario: "1 o 2s")
+        this.currentSlide = 2;
+        this.updateSlides();
+        await new Promise(r => setTimeout(r, 1500));
+
+        // 4. Ojos Semi-Abiertos (Rápido: 100ms)
+        this.currentSlide = 1;
+        this.updateSlides();
+        await new Promise(r => setTimeout(r, 100));
+
+        // 5. Reiniciar ciclo
+        blinkSequence();
+      }, waitTime);
+    };
+
+    blinkSequence();
   }
 
   updateSlides() {
