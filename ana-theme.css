@@ -107,6 +107,14 @@
 }
 
 /* Full Body Mode Evolution Adjustments */
+#avatarWrap.full-body-mode {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
 .full-body-mode .avatar-wrap {
     width: 100%;
     height: 100%;

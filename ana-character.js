@@ -40,53 +40,55 @@ const ANA_SVG_TEMPLATE = `
   object-fit: contain; /* ENCUADRE: Contain impide recortes */
   object-position: 50% 50%; /* POSICIÓN INTERNA: Centro */
   
-  /* <--- COORDENADAS MAGNÉTICAS FIJAS ---> */
+  /* <--- COORDENADAS MAGNÉTICAS ---> */
   transform-origin: 50% 50%;
-  transform: scale(2.5) translate(0px, 30px);
+  /* Eliminamos distorsión: Mantenemos un zoom limpio sin abusar del scale si no es necesario,
+     pero respetamos el zoom del usuario si lo prefiere. Bajamos un poco el scale a 2.2 para mayor nitidez */
+  transform: scale(2.2) translate(0px, 45px) translateY(var(--ana-anim-y, 0px));
   
-  filter:
-    drop-shadow(0 0 18px rgba(0, 200, 255, 0.30))
-    saturate(1.15) brightness(1.08); /* Colores radiantes, cero interferencias */
+  /* Eliminamos saturate y brightness que causan "ruido" o distorsión en la piel */
+  filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
     
-  /* Recorte suave del contorno para fundir la silueta mágicamente con el panel oscuro */
-  -webkit-mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-  mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+  /* Suavizamos la máscara para evitar bordes "sucios" */
+  -webkit-mask-image: radial-gradient(ellipse 80% 90% at 50% 50%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
+  mask-image: radial-gradient(ellipse 80% 90% at 50% 50%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
   
   pointer-events: none;
-}
+  image-rendering: auto; /* Dejar que el navegador maneje el suavizado */
 
-/* Base siempre visible */
-#anaHoloImg {
-  opacity: 1; 
-}
-
-/* Capa de ojos cerrados que transiciona encima */
-#anaBlinkImg {
+  /* Visibilidad base */
   opacity: 0;
-  transition: opacity 1s ease-in-out; /* Transición muy suave hacia la 2da imagen */
+  transition: opacity 0.5s ease-in-out;
 }
 
-#anaBlinkImg.active {
+/* Base - Ojos Abiertos */
+#anaHoloImg { 
+  z-index: 1;
+}
+
+/* Capa - Ojos Semi-Abiertos */
+#anaHalfImg {
+  z-index: 2;
+}
+
+/* Capa - Ojos Cerrados */
+#anaBlinkImg { 
+  z-index: 3;
+}
+
+.ana-holo-img.active {
   opacity: 1;
-}
-
-
-/* SPEAKING STATE */
-.ana-speaking .ana-holo-img {
-  filter:
-    drop-shadow(0 0 35px rgba(0, 220, 255, 0.60))
-    saturate(1.3) brightness(1.20);
 }
 </style>
 
 <div class="avatar-wrap full-body-mode" id="anaAvatarWrap">
   <div class="avatar-svg-wrap" id="anaAvatarSvg">
-    <div class="ana-holo-wrap">
+    <div class="ana-holo-wrap" id="anaAnimContainer">
       <div class="ana-holo-img-wrap" id="anaImgWrap">
-        <!-- BASE: Ojos Abiertos -->
-        <img id="anaHoloImg" class="ana-holo-img active" src="./ana-holographic.png" alt="Ana Holographic Avatar" />
-        <!-- BLINK LAYER: Ojos Cerrados -->
-        <img id="anaBlinkImg" class="ana-holo-img" src="./ana-blink.png" alt="Ana Blinking" />
+        <!-- DIAPOSITIVAS: 1(Open), 2(Half), 3(Closed) -->
+        <img id="anaHoloImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Open" />
+        <img id="anaHalfImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Half" /> <!-- Placeholder hasta ana-half.png -->
+        <img id="anaBlinkImg" class="ana-holo-img" src="./ana-blink.png" alt="Ana Closed" />
       </div>
     </div>
   </div>
@@ -96,11 +98,13 @@ const ANA_SVG_TEMPLATE = `
 class AnaCharacter {
   constructor(container) {
     this.container = container;
-    this.lipSyncInterval = null;
+    this.lifeCycleInterval = null;
     this.slideshowInterval = null;
     this.isSpeaking = false;
+    this.currentSlide = 0; // 0=Open, 1=Half, 2=Closed
     this.render();
     this.startSlideshow();
+    this.startLifeCycle();
   }
 
   render() {
@@ -108,65 +112,85 @@ class AnaCharacter {
     this.container.innerHTML = ANA_SVG_TEMPLATE;
 
     this.avatarWrap = document.getElementById('anaAvatarWrap');
-    this.holoImgWrap = document.getElementById('anaImgWrap');
-    this.holoImg = document.getElementById('anaHoloImg'); // Ojos Abiertos
-    this.blinkImg = document.getElementById('anaBlinkImg'); // Ojos Cerrados
+    this.slides = [
+      document.getElementById('anaHoloImg'),
+      document.getElementById('anaHalfImg'),
+      document.getElementById('anaBlinkImg')
+    ];
+
+    this.updateSlides();
   }
 
   startSlideshow() {
-    // La imagen de ojos abiertos (holoImg) SIEMPRE está ahí. Su opacidad no cambia.
-    // Nosotros simplemente mostramos suavemente la de "ojos cerrados" por encima de ella.
-    let showClosedEyes = false;
-
-    // Inicia asegurando que la capa blinkImg está oculta (transparente)
-    if (this.blinkImg) this.blinkImg.classList.remove('active');
-
+    // Ciclo de 15 segundos total (5s cada una)
     this.slideshowInterval = setInterval(() => {
-      showClosedEyes = !showClosedEyes;
-
-      if (showClosedEyes) {
-        if (this.blinkImg) this.blinkImg.classList.add('active');
-      } else {
-        if (this.blinkImg) this.blinkImg.classList.remove('active');
-      }
+      this.currentSlide = (this.currentSlide + 1) % 3;
+      this.updateSlides();
     }, 5000);
+  }
+
+  updateSlides() {
+    this.slides.forEach((slide, index) => {
+      if (slide) {
+        if (index === this.currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      }
+    });
+  }
+
+  /**
+   * Ciclo de vida visual: Parpadeo natural, Respiración y Habla
+   */
+  startLifeCycle() {
+    let t = 0;
+    let p = 0;
+
+    // Bucle principal de animación (60fps aprox)
+    this.lifeCycleInterval = setInterval(() => {
+      t += 0.04; // Respiración más pausada y natural
+      p += 0.45;
+
+      const breathY = Math.sin(t) * 2; // Menos recorrido para evitar mareo
+      let speakY = 0;
+
+      // Si está hablando, calculamos la intensidad del lip-sync
+      if (this.isSpeaking) {
+        speakY = Math.abs(Math.sin(p)) * -3;
+      }
+
+      const totalY = breathY + speakY;
+
+      // Aplicar movimiento a través de variable CSS para no romper el transform base
+      if (this.avatarWrap) {
+        this.avatarWrap.style.setProperty('--ana-anim-y', `${totalY}px`);
+
+        // Efecto reactivo muy sutil al habla, solo glow, nada de distorsión de color
+        const activeSlide = this.slides[this.currentSlide];
+        if (this.isSpeaking && activeSlide) {
+          const glow = 15 + Math.abs(Math.sin(p)) * 10;
+          activeSlide.style.filter = `drop-shadow(0 0 ${glow}px rgba(0, 200, 255, 0.5))`;
+        } else if (activeSlide) {
+          activeSlide.style.filter = '';
+        }
+      }
+    }, 32);
+  }
+
+  performBlink() {
+    // This method is no longer used as blinking is handled by the slideshow
   }
 
   startSpeaking() {
     this.isSpeaking = true;
     if (this.avatarWrap) this.avatarWrap.classList.add('ana-speaking');
-    this.startLipSync();
   }
 
   stopSpeaking() {
     this.isSpeaking = false;
     if (this.avatarWrap) this.avatarWrap.classList.remove('ana-speaking');
-    this.stopLipSync();
     document.dispatchEvent(new CustomEvent('anaFinishedSpeaking'));
-  }
-
-  startLipSync() {
-    if (this.lipSyncInterval) clearInterval(this.lipSyncInterval);
-    let p = 0;
-    this.lipSyncInterval = setInterval(() => {
-      p++;
-      const open = Math.abs(Math.sin(p * 0.45)) * 0.8 + Math.abs(Math.sin(p * 0.1)) * 0.2;
-      if (this.holoImg) {
-        // Resonancia biológica del habla sin perturbar el rostro
-        this.holoImg.style.filter = `
-          drop-shadow(0 0 ${20 + open * 20}px rgba(0, 220, 255, 0.70))
-          saturate(${1.15 + open * 0.4}) brightness(${1.08 + open * 0.2})
-        `;
-        this.holoImg.style.transform = `translateY(${open * -2}px)`;
-      }
-    }, 60);
-  }
-
-  stopLipSync() {
-    if (this.lipSyncInterval) { clearInterval(this.lipSyncInterval); this.lipSyncInterval = null; }
-    if (this.holoImg) {
-      this.holoImg.style.filter = '';
-      this.holoImg.style.transform = '';
-    }
   }
 }
