@@ -44,7 +44,7 @@ const ANA_SVG_TEMPLATE = `
   transform-origin: 50% 50%;
   /* Eliminamos distorsión: Mantenemos un zoom limpio sin abusar del scale si no es necesario,
      pero respetamos el zoom del usuario si lo prefiere. Bajamos un poco el scale a 2.2 para mayor nitidez */
-  transform: scale(2.2) translate(0px, 45px) translateY(var(--ana-anim-y, 0px));
+  transform: scale(2.2) translate(0px, 10px) translateY(var(--ana-anim-y, 0px));
   
   /* Eliminamos saturate y brightness que causan "ruido" o distorsión en la piel */
   filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
@@ -127,36 +127,27 @@ class AnaCharacter {
   }
 
   /**
-   * Ciclo de Parpadeo Natural (No Lineal)
-   * Los ojos permanecen abiertos la mayor parte del tiempo.
-   * El parpadeo es una secuencia rápida: Abierto -> Medio -> Cerrado -> Medio -> Abierto.
+   * Secuencia explícita de parpadeo (10s, 2s, 3s)
    */
   startBlinking() {
     const blinkSequence = async () => {
-      // 1. Ojos Abiertos (Tiempo aleatorio entre 1 y 2 segundos)
+      // 1. Ojos Abiertos (10 segundos)
       this.currentSlide = 0;
       this.updateSlides();
-      const waitTime = 1000 + Math.random() * 1000;
+      await new Promise(r => setTimeout(r, 10000));
 
-      this.blinkTimeout = setTimeout(async () => {
-        // 2. Ojos Semi-Abiertos (Rápido: 100ms)
-        this.currentSlide = 1;
-        this.updateSlides();
-        await new Promise(r => setTimeout(r, 100));
+      // 2. Ojos Semi-Abiertos (2 segundos)
+      this.currentSlide = 1;
+      this.updateSlides();
+      await new Promise(r => setTimeout(r, 2000));
 
-        // 3. Ojos Cerrados (1.5 segundos como solicitó el usuario: "1 o 2s")
-        this.currentSlide = 2;
-        this.updateSlides();
-        await new Promise(r => setTimeout(r, 1500));
+      // 3. Ojos Cerrados (3 segundos)
+      this.currentSlide = 2;
+      this.updateSlides();
+      await new Promise(r => setTimeout(r, 3000));
 
-        // 4. Ojos Semi-Abiertos (Rápido: 100ms)
-        this.currentSlide = 1;
-        this.updateSlides();
-        await new Promise(r => setTimeout(r, 100));
-
-        // 5. Reiniciar ciclo
-        blinkSequence();
-      }, waitTime);
+      // Reiniciar ciclo
+      blinkSequence();
     };
 
     blinkSequence();
