@@ -160,10 +160,15 @@ class AnaCharacter {
 
       // Si está hablando, controlamos el frame del lip-sync (procedimiento de 3 imágenes)
       if (this.isSpeaking) {
-        // Ciclo de frames: 2 (Open), 3 (Half), 4 (Closed)
-        // Reducimos la velocidad (p * 0.7 en lugar de p * 2) para que sea más natural y menos 'frenético'
-        const frameCycle = Math.floor(p * 1.25) % 3;
-        this.currentSlide = 2 + frameCycle;
+        // En lugar de ciclo aleatorio, usamos el targetFrame definido por AssistantCore
+        // El targetFrame se actualiza en tiempo real según el texto hablado
+        if (this.targetMouthFrame !== undefined) {
+          this.currentSlide = this.targetMouthFrame;
+        } else {
+          // Fallback a ciclo suave si no hay target directo
+          const frameCycle = Math.floor(p * 1.2) % 3;
+          this.currentSlide = 2 + frameCycle;
+        }
         this.updateSlides();
       }
 
@@ -203,9 +208,23 @@ class AnaCharacter {
     this.updateSlides();
   }
 
+  setMouthShape(char) {
+    if (!this.isSpeaking) return;
+    const c = char.toLowerCase();
+    // Mapeo pro: Vocales abiertas -> Open, Vocales cerradas -> Half, Otros -> Closed
+    if (/[aeoáéó]/.test(c)) {
+      this.targetMouthFrame = 2; // Open
+    } else if (/[iuíú]/.test(c)) {
+      this.targetMouthFrame = 3; // Half
+    } else {
+      this.targetMouthFrame = 4; // Closed
+    }
+  }
+
   startSpeaking() {
     this.isSpeaking = true;
     this.isPaused = true;
+    this.targetMouthFrame = 4; // Empezamos cerrada
 
     if (this.avatarWrap) this.avatarWrap.classList.add('ana-speaking');
   }
@@ -213,6 +232,7 @@ class AnaCharacter {
   stopSpeaking() {
     this.isSpeaking = false;
     this.isPaused = false; // Reanuda el parpadeo natural
+    this.targetMouthFrame = 4;
     this.setPose('idle'); // Vuelve a la pose inicial
 
     if (this.avatarWrap) this.avatarWrap.classList.remove('ana-speaking');

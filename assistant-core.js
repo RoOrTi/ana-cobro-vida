@@ -320,6 +320,25 @@ class AssistantCore {
             if (this.anaCharacter) this.anaCharacter.startSpeaking();
         };
 
+        // --- LIP SYNC PRO: Fonemas ---
+        utterance.onboundary = (event) => {
+            if (event.name === 'word' && this.anaCharacter) {
+                const word = cleanText.substring(event.charIndex, event.charIndex + event.charLength);
+                // Analizamos la 'energía' de la palabra según sus vocales
+                // Tomamos el primer carácter representativo para el frame inicial del vocablo
+                const firstChar = word.charAt(0);
+                this.anaCharacter.setMouthShape(firstChar);
+
+                // Efecto de movimiento rápido para que no quede estática la boca en palabras largas
+                if (word.length > 3) {
+                    setTimeout(() => {
+                        const midChar = word.charAt(Math.floor(word.length / 2));
+                        if (this.anaCharacter.isSpeaking) this.anaCharacter.setMouthShape(midChar);
+                    }, 50);
+                }
+            }
+        };
+
         utterance.onend = () => {
             if (this.anaCharacter) this.anaCharacter.stopSpeaking();
             document.dispatchEvent(new CustomEvent('anaFinishedSpeaking'));
