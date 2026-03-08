@@ -347,9 +347,18 @@ class AssistantBrain {
             poseToSet = 'presenter';
         }
 
-        else if (input.match(/temporizador|timer|alarma|recordatorio|descanso|break|pausa|avisa|av[ií]same|cuenta regresiva/) ||
+        // --- ALARMA: siempre 30 minutos, sin importar lo que diga el usuario ---
+        else if (input.match(/\balarma\b/)) {
+            this.core.startTimer(30);
+            response = "Alarma programada. Te aviso en 30 minutos. 🔔";
+            poseToSet = 'happy';
+        }
+
+        // --- TEMPORIZADOR: flexible, entiende cualquier duración ---
+        else if (input.match(/temporizador|timer|recordatorio|avisa|av[ií]same|cuenta regresiva/) ||
             (input.match(/pon|programa|ejecuta|activa|crea|configura|pone|poneme|ponme|agend[aá]|set|inicia|arranca/) && input.match(/minuto|hora|segundo|\d+|uno|dos|tres|cuatro|cinco|diez|quince|veinte|treinta|media/))) {
-            // --- DICCIONARIO COMPLETO: palabras → números ---
+
+            // Diccionario completo: palabras → números
             const wordToNum = {
                 'un': 1, 'uno': 1, 'una': 1,
                 'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
@@ -362,7 +371,6 @@ class AssistantBrain {
                 'sesenta': 60, 'media hora': 30
             };
 
-            // Reemplazar palabras por números
             let cleanInput = input;
             for (const [word, num] of Object.entries(wordToNum)) {
                 cleanInput = cleanInput.replace(new RegExp(`\\b${word}\\b`, 'gi'), num);
@@ -382,7 +390,7 @@ class AssistantBrain {
                     poseToSet = 'thinking';
                 }
             } else {
-                // No se entendió el tiempo → Guardar opciones de accesibilidad como pendientes
+                // No se entendió la duración → mostrar opciones de accesibilidad
                 response = "No pude identificar la duración. ¿De cuántos minutos querés el temporizador?";
                 poseToSet = 'thinking';
                 pendingSuggestions = [
