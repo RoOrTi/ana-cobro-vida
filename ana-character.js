@@ -57,11 +57,13 @@ const ANA_SVG_TEMPLATE = `
   mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%);
   
   pointer-events: none;
-  image-rendering: auto; /* Dejar que el navegador maneje el suavizado */
-
-  /* Visibilidad base */
+  image-rendering: auto;
   opacity: 0;
-  transition: opacity 0.5s ease-in-out;
+
+  /* Transición suave para gestos — sin interferir con lip-sync */
+  transition: 
+    opacity 0.5s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* Ajustes específicos para LABIOS durante el habla: Anclaje ultra-estable */
@@ -226,19 +228,56 @@ class AnaCharacter {
     const p = data.parametros;
     const root = this.avatarWrap;
 
-    // Mapeo selectivo de parámetros a variables CSS
+    // BOCA: apertura y curvatura independientes
     if (p.boca) {
-      if (p.boca.apertura) root.style.setProperty('--ana-mouth-s', p.boca.apertura.escala);
-      if (p.boca.curvatura) root.style.setProperty('--ana-mouth-y', `${p.boca.curvatura.escala * 10}px`);
+      if (p.boca.apertura) {
+        root.style.setProperty('--ana-mouth-s', p.boca.apertura.escala);
+      }
+      if (p.boca.curvatura) {
+        // Curvatura positiva = sonrisa (mueve boca hacia arriba)
+        const curva = p.boca.curvatura.escala * 8;
+        root.style.setProperty('--ana-mouth-y', `${-curva}px`);
+      }
     }
 
+    // MEJILLAS: coordinadas con la sonrisa (elevan leve el conjunto facial)
     if (p.mejillas && p.mejillas.elevacion) {
-      root.style.setProperty('--ana-g-y', `-${p.mejillas.elevacion.escala * 5}px`);
+      const elev = p.mejillas.elevacion.escala * 6;
+      root.style.setProperty('--ana-g-y', `-${elev}px`);
     }
 
-    if (p.ojos && p.ojos.cierre_parcial) {
-      // Simular entrecerrar ojos mediante escala leve
-      root.style.setProperty('--ana-g-scale', 1 + (p.ojos.cierre_parcial.escala * 0.05));
+    // OJOS: cierre parcial = leve zoom + bajada de cejas superior
+    if (p.ojos) {
+      const cierre = p.ojos.cierre_parcial || p.ojos.cierre;
+      if (cierre) {
+        // Cierre parcial: leve agrandamiento percibido (mejillas suben, ojos se achican)
+        const escala = 1 + (cierre.escala * 0.04);
+        root.style.setProperty('--ana-g-scale', escala);
+        // Subir imagen levemente para compensar el zoom (para que no se corte la cabeza)
+        const shift = cierre.escala * 3;
+        const currentY = parseFloat(root.style.getPropertyValue('--ana-g-y') || '0');
+        root.style.setProperty('--ana-g-y', `${currentY - shift}px`);
+      }
+    }
+
+    // CEJAS: ascenso (sorpresa) o descenso (ceño)
+    if (p.cejas) {
+      if (p.cejas.ascenso) {
+        // Sorpresa: leve scale-up y desplazamiento hacia arriba
+        const asc = p.cejas.ascenso.escala * 5;
+        root.style.setProperty('--ana-g-y', `${-(asc)}px`);
+      }
+      if (p.cejas.ligera_descenso || p.cejas.descenso) {
+        const desc = (p.cejas.ligera_descenso || p.cejas.descenso).escala * 3;
+        root.style.setProperty('--ana-g-y', `${desc}px`);
+      }
+    }
+
+    // FRENTE: arrugas = leve compress vertical
+    if (p.frente && p.frente.arrugas) {
+      const arruga = p.frente.arrugas.escala * 0.02;
+      const currScale = parseFloat(root.style.getPropertyValue('--ana-g-scale') || '1');
+      root.style.setProperty('--ana-g-scale', currScale - arruga);
     }
 
     console.log(`[Ana] Gesto aplicado: ${data.gesto}`);
@@ -260,32 +299,62 @@ class AnaCharacter {
     this.currentPose = poseName;
     console.log(`[Ana] Cambiando pose a: ${poseName}`);
 
-    // Limpiar clases de pose anteriores
     const poseClasses = ['pose-happy', 'pose-thinking', 'pose-serious'];
     if (this.avatarWrap) {
       this.avatarWrap.classList.remove(...poseClasses);
-      this.resetGestures(); // Limpiar gestos dinámicos al cambiar de pose
+      this.resetGestures();
       if (poseName !== 'idle') this.avatarWrap.classList.add(`pose-${poseName}`);
     }
 
+    // Gestos JSON completos para cada pose
     if (poseName === 'happy') {
       this.poseGlow = "rgba(255, 215, 0, 0.6)";
       this.poseSpeed = 0.04;
+      // Aplicar gesto completo de risa/alegría
+      this.applyGesture({
+        gesto: 'happy',
+        parametros: {
+          boca: { apertura: { escala: 0.85 }, curvatura: { escala: 0.9 } },
+          mejillas: { elevacion: { escala: 0.7 } },
+          ojos: { cierre_parcial: { escala: 0.4 } },
+          cejas: { ligera_descenso: { escala: 0.2 } }
+        },
+        duracion: null // Mantener hasta que cambie la pose
+      });
     } else if (poseName === 'thinking') {
       this.poseGlow = "rgba(0, 255, 255, 0.4)";
       this.poseSpeed = 0.01;
+      this.applyGesture({
+        gesto: 'thinking',
+        parametros: {
+          cejas: { ascenso: { escala: 0.3 } },
+          ojos: { apertura: { escala: 0.1 } }
+        },
+        duracion: null
+      });
     } else if (poseName === 'serious') {
       this.poseGlow = "rgba(255, 60, 0, 0.6)";
       this.poseSpeed = 0.05;
+      this.applyGesture({
+        gesto: 'serious',
+        parametros: {
+          cejas: { descenso: { escala: 0.5 } },
+          frente: { arrugas: { escala: 0.4 } },
+          boca: { curvatura: { escala: -0.2 } }
+        },
+        duracion: null
+      });
+    } else {
+      this.poseGlow = "rgba(0, 200, 255, 0.5)";
+      this.poseSpeed = 0.02;
     }
 
-    // Si la pose no es idle, pasamos a la imagen estática
     if (poseName !== 'idle') {
       this.isPaused = true;
       this.currentSlide = 1;
     } else {
       this.isPaused = false;
-      this.currentSlide = 0; // Vuelve al GIF
+      this.currentSlide = 0;
     }
     this.updateSlides();
   }
