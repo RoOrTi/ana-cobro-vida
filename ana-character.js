@@ -37,8 +37,8 @@ const ANA_SVG_TEMPLATE = `
   top: 0; left: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* ENCUADRE: Contain impide recortes */
-  object-position: 50% 50%; /* POSICIÓN INTERNA: Centro */
+  object-fit: cover; /* RECORTAR: Cover llena el espacio */
+  object-position: left center; /* ANCLAJE: Mantiene a Ana a la izquierda y oculta el residuo derecho */
   
   /* <--- COORDENADAS MAGNÉTICAS ---> */
   transform-origin: 50% 50%;
@@ -49,8 +49,8 @@ const ANA_SVG_TEMPLATE = `
   filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
     
   /* Suavizamos la máscara para evitar bordes "sucios" */
-  -webkit-mask-image: radial-gradient(ellipse 80% 90% at 50% 50%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
-  mask-image: radial-gradient(ellipse 80% 90% at 50% 50%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
   
   pointer-events: none;
   image-rendering: auto; /* Dejar que el navegador maneje el suavizado */
