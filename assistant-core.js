@@ -12,6 +12,7 @@ class AssistantCore {
         this.brain = null;
         this.anaCharacter = null;
         this.agenda = JSON.parse(localStorage.getItem('ana-agenda') || '[]');
+        this.lastMepPrice = null; // Seguimiento proactivo
 
         this.initAnaCharacter();
         this.initSpeechRecognition();
@@ -322,7 +323,21 @@ class AssistantCore {
     async fetchMarketData() {
         if (!this.brain) return;
         await this.brain.fetchMarketIndices();
-        this.updateMarketTicker(this.brain.financialData);
+        const data = this.brain.financialData;
+
+        // --- ALERTA PROACTIVA (Salto de Precio) ---
+        if (data && data.market_summary) {
+            const currentMep = data.market_summary.exchange_rates.dolar_mep.valor;
+            // Si el precio cambia más de 2 pesos de un momento a otro
+            if (this.lastMepPrice && Math.abs(currentMep - this.lastMepPrice) >= 2) {
+                const trend = currentMep > this.lastMepPrice ? "subido" : "bajado";
+                this.speak(`Ana informa: El Dólar MEP ha ${trend} y ahora cotiza a ${Math.floor(currentMep)} pesos.`);
+                if (this.anaCharacter) this.anaCharacter.setPose('serious');
+            }
+            this.lastMepPrice = currentMep;
+        }
+
+        this.updateMarketTicker(data);
     }
 
     updateMarketTicker(data) {

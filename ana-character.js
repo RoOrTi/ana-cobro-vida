@@ -153,7 +153,7 @@ class AnaCharacter {
     let p = 0;
 
     this.lifeCycleInterval = setInterval(() => {
-      t += 0.02;
+      t += (this.poseSpeed || 0.02);
       p += 0.15;
 
       const totalY = Math.sin(t) * 2;
@@ -178,11 +178,11 @@ class AnaCharacter {
 
         // Efecto reactivo muy sutil al habla, solo glow, nada de distorsión de color
         const activeSlide = this.slides[this.currentSlide];
-        if (this.isSpeaking && activeSlide) {
-          const glow = 15 + Math.abs(Math.sin(p)) * 10;
-          activeSlide.style.filter = `drop-shadow(0 0 ${glow}px rgba(0, 200, 255, 0.5))`;
-        } else if (activeSlide) {
-          activeSlide.style.filter = '';
+        if (activeSlide) {
+          const glowColor = this.poseGlow || "rgba(0, 200, 255, 0.5)";
+          const baseGlow = this.isSpeaking ? 15 : 10;
+          const glow = baseGlow + Math.abs(Math.sin(p)) * 10;
+          activeSlide.style.filter = `drop-shadow(0 0 ${glow}px ${glowColor})`;
         }
       }
     }, 32);
@@ -196,11 +196,25 @@ class AnaCharacter {
     this.currentPose = poseName;
     console.log(`[Ana] Cambiando pose a: ${poseName}`);
 
+    // Configuración de efectos según pose
+    this.poseGlow = "rgba(0, 200, 255, 0.5)";
+    this.poseSpeed = 0.02;
+
+    if (poseName === 'happy') {
+      this.poseGlow = "rgba(255, 215, 0, 0.6)"; // Oro
+      this.poseSpeed = 0.04;
+    } else if (poseName === 'thinking') {
+      this.poseGlow = "rgba(0, 255, 255, 0.4)"; // Cyan concentrado
+      this.poseSpeed = 0.01;
+    } else if (poseName === 'serious') {
+      this.poseGlow = "rgba(255, 60, 0, 0.6)"; // Alerta
+      this.poseSpeed = 0.05;
+    }
+
     // Si la pose no es idle, pasamos a la imagen estática
     if (poseName !== 'idle') {
       this.isPaused = true;
       this.currentSlide = 1;
-      // Aquí se podrían inyectar animaciones de emojis o efectos según la pose
     } else {
       this.isPaused = false;
       this.currentSlide = 0; // Vuelve al GIF

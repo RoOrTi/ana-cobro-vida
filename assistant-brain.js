@@ -196,6 +196,13 @@ class AssistantBrain {
         let chartData = null;
         let poseToSet = 'idle';
 
+        // --- DETECCIÓN PREVIA DE INTENCIONES ---
+        if (input.match(/analiza|calcula|piensa|predice|cuanto es|proyecta/)) {
+            poseToSet = 'thinking';
+        } else if (input.match(/mercado|dolar|mep|riesgo pais|merval|economia/)) {
+            poseToSet = 'serious';
+        }
+
         // --- 1. SALUDOS Y CORTESÍA (Sesión Única con contexto) ---
         if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal|ana/)) {
             const now = new Date();
