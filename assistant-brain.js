@@ -195,6 +195,7 @@ class AssistantBrain {
         let response = "";
         let chartData = null;
         let poseToSet = 'idle';
+        let pendingSuggestions = null; // Si se define, reemplaza las sugerencias automáticas
 
         // --- DETECCIÓN PREVIA DE INTENCIONES ---
         if (input.match(/analiza|calcula|piensa|predice|cuanto es|proyecta/)) {
@@ -346,7 +347,8 @@ class AssistantBrain {
             poseToSet = 'presenter';
         }
 
-        else if (input.match(/temporizador|timer|atenci[oó]n|av[ií]same|alarma|descanso|recordatorio|en \d|en un/)) {
+        else if (input.match(/temporizador|timer|alarma|recordatorio|descanso|break|pausa|avisa|av[ií]same|cuenta regresiva/) ||
+            (input.match(/pon|programa|ejecuta|activa|crea|configura|pone|poneme|ponme|agend[aá]|set|inicia|arranca/) && input.match(/minuto|hora|segundo|\d+|uno|dos|tres|cuatro|cinco|diez|quince|veinte|treinta|media/))) {
             // --- DICCIONARIO COMPLETO: palabras → números ---
             const wordToNum = {
                 'un': 1, 'uno': 1, 'una': 1,
@@ -380,19 +382,14 @@ class AssistantBrain {
                     poseToSet = 'thinking';
                 }
             } else {
-                // No se entendió el tiempo → Ofrecer opciones de accesibilidad
+                // No se entendió el tiempo → Guardar opciones de accesibilidad como pendientes
                 response = "No pude identificar la duración. ¿De cuántos minutos querés el temporizador?";
                 poseToSet = 'thinking';
-                // Disparar botones de selección rápida inmediatamente
-                if (this.core) {
-                    setTimeout(() => {
-                        this.core.showSuggestions([
-                            'Temporizador de 1 minuto',
-                            'Temporizador de 15 minutos',
-                            'Temporizador de 30 minutos'
-                        ]);
-                    }, 900);
-                }
+                pendingSuggestions = [
+                    'Temporizador de 1 minuto',
+                    'Temporizador de 15 minutos',
+                    'Temporizador de 30 minutos'
+                ];
             }
         }
 
@@ -400,15 +397,11 @@ class AssistantBrain {
         else if (input.match(/descanso|break|pausa|tomemos|vamos a descansar|nos descansamos/)) {
             response = "¡Buena idea! ¿De cuántos minutos va a ser el descanso?";
             poseToSet = 'happy';
-            if (this.core) {
-                setTimeout(() => {
-                    this.core.showSuggestions([
-                        'Temporizador de 1 minuto',
-                        'Temporizador de 15 minutos',
-                        'Temporizador de 30 minutos'
-                    ]);
-                }, 900);
-            }
+            pendingSuggestions = [
+                'Temporizador de 1 minuto',
+                'Temporizador de 15 minutos',
+                'Temporizador de 30 minutos'
+            ];
         }
 
         // --- 8. FALLBACK PREDICTIVO (Por si no entiende) ---
@@ -435,9 +428,13 @@ class AssistantBrain {
                 this.core.speak(response);
                 this.core.addMessage(response, 'ana', chartData);
 
-                // Show 3 follow-up suggestions
-                const suggestions = this.core.getSuggestionsFor(input, response);
-                this.core.showSuggestions(suggestions.slice(0, 3));
+                // Mostrar sugerencias: prioridad a pendingSuggestions (ej: timer) sobre las automáticas
+                if (pendingSuggestions) {
+                    this.core.showSuggestions(pendingSuggestions);
+                } else {
+                    const suggestions = this.core.getSuggestionsFor(input, response);
+                    this.core.showSuggestions(suggestions.slice(0, 3));
+                }
             }, 800 + Math.random() * 800);
         }
     }
