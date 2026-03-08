@@ -85,10 +85,9 @@ const ANA_SVG_TEMPLATE = `
   <div class="avatar-svg-wrap" id="anaAvatarSvg">
     <div class="ana-holo-wrap" id="anaAnimContainer">
       <div class="ana-holo-wrap-inner" style="position: relative; width: 100%; height: 100%;">
-        <!-- DIAPOSITIVAS: 1(Open), 2(Half), 3(Closed) -->
-        <img id="anaHoloImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Open" />
-        <img id="anaHalfImg" class="ana-holo-img" src="./ana-half.png" alt="Ana Half" /> 
-        <img id="anaBlinkImg" class="ana-holo-img" src="./ana-blink.png" alt="Ana Closed" />
+        <!-- DIAPOSITIVAS -->
+        <img id="anaHoloImg" class="ana-holo-img active" src="./Parpadeo.gif" alt="Ana Idle" />
+        <img id="anaStaticImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Action" />
       </div>
     </div>
   </div>
@@ -102,10 +101,9 @@ class AnaCharacter {
     this.blinkTimeout = null;
     this.isSpeaking = false;
     this.isPaused = false;
-    this.currentSlide = 0; // 0=Open, 1=Half, 2=Closed
+    this.currentSlide = 0; // 0=Idle(GIF), 1=Action(Static)
     this.currentPose = 'idle';
     this.render();
-    this.startBlinking();
     this.startLifeCycle();
   }
 
@@ -116,59 +114,12 @@ class AnaCharacter {
     this.avatarWrap = document.getElementById('anaAvatarWrap');
     this.slides = [
       document.getElementById('anaHoloImg'),
-      document.getElementById('anaHalfImg'),
-      document.getElementById('anaBlinkImg')
+      document.getElementById('anaStaticImg')
     ];
 
     this.updateSlides();
   }
-
-  /**
-   * Helper para esperar pero poder ser interrumpido si se pausa
-   */
-  async waitIfIdle(ms) {
-    const steps = ms / 100;
-    for (let i = 0; i < steps; i++) {
-      if (this.isPaused) return false; // Interrumpido
-      await new Promise(r => setTimeout(r, 100));
-    }
-    return true; // Completó el tiempo
-  }
-
-  /**
-   * Secuencia explícita de parpadeo (10s, 2s, 3s)
-   */
-  startBlinking() {
-    const blinkSequence = async () => {
-      if (this.isPaused) {
-        await new Promise(r => setTimeout(r, 500));
-        return blinkSequence();
-      }
-
-      // 1. Ojos Abiertos (10 segundos)
-      this.currentSlide = 0;
-      this.updateSlides();
-      let completed = await this.waitIfIdle(10000);
-      if (!completed) return blinkSequence();
-
-      // 2. Ojos Semi-Abiertos (2 segundos)
-      this.currentSlide = 1;
-      this.updateSlides();
-      completed = await this.waitIfIdle(2000);
-      if (!completed) return blinkSequence();
-
-      // 3. Ojos Cerrados (3 segundos)
-      this.currentSlide = 2;
-      this.updateSlides();
-      completed = await this.waitIfIdle(3000);
-      if (!completed) return blinkSequence();
-
-      // Reiniciar ciclo
-      blinkSequence();
-    };
-
-    blinkSequence();
-  }
+  // El bucle manual de parpadeo ha sido reemplazado por Parpadeo.gif en el HTML
 
   updateSlides() {
     this.slides.forEach((slide, index) => {
@@ -228,21 +179,24 @@ class AnaCharacter {
     this.currentPose = poseName;
     console.log(`[Ana] Cambiando pose a: ${poseName}`);
 
-    // Si la pose no es idle, pausamos el parpadeo normal
+    // Si la pose no es idle, pasamos a la imagen estática
     if (poseName !== 'idle') {
       this.isPaused = true;
+      this.currentSlide = 1;
       // Aquí se podrían inyectar animaciones de emojis o efectos según la pose
     } else {
       this.isPaused = false;
+      this.currentSlide = 0; // Vuelve al GIF
     }
+    this.updateSlides();
   }
 
   startSpeaking() {
     this.isSpeaking = true;
-    this.isPaused = true; // Pausa el parpadeo mientras habla
+    this.isPaused = true; // Empieza acción
 
-    // Forzamos los ojos abiertos mientras habla (opcional, o semi)
-    this.currentSlide = 0;
+    // Forzamos la imagen estática mientras habla
+    this.currentSlide = 1;
     this.updateSlides();
 
     if (this.avatarWrap) this.avatarWrap.classList.add('ana-speaking');
