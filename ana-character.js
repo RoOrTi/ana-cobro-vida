@@ -60,6 +60,11 @@ const ANA_SVG_TEMPLATE = `
   transition: opacity 0.5s ease-in-out;
 }
 
+/* Desactivar transiciones suaves para los labios de habla para evitar efecto 'transparente' */
+#anaTalkOpen, #anaTalkHalf, #anaTalkClosed {
+  transition: none !important;
+}
+
 /* Base - Ojos Abiertos */
 #anaHoloImg { 
   z-index: 1;
@@ -155,10 +160,10 @@ class AnaCharacter {
 
       // Si está hablando, controlamos el frame del lip-sync (procedimiento de 3 imágenes)
       if (this.isSpeaking) {
-        // Ciclo rápido de frames: 2 (Open), 3 (Half), 4 (Closed)
-        // Usamos p para determinar el frame basado en el tiempo
-        const frameCycle = Math.floor(p * 2) % 3; // 0, 1, 2
-        this.currentSlide = 2 + frameCycle; // Mapea a anaTalkOpen, Half, Closed
+        // Ciclo de frames: 2 (Open), 3 (Half), 4 (Closed)
+        // Reducimos la velocidad (p * 0.7 en lugar de p * 2) para que sea más natural y menos 'frenético'
+        const frameCycle = Math.floor(p * 0.7) % 3;
+        this.currentSlide = 2 + frameCycle;
         this.updateSlides();
       }
 

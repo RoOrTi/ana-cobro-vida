@@ -217,8 +217,8 @@ class AssistantBrain {
             poseToSet = 'thinking';
         }
 
-        // --- 3. CLIMA Y TIEMPO ---
-        else if (input.match(/clima|tiempo|temperatura|llueve|lluvia|pronóstico/)) {
+        // --- 3. CLIMA Y TIEMPO (Priorizar finanzas si ambos están presentes) ---
+        else if (input.match(/clima|tiempo|temperatura|llueve|pronóstico/) && !input.match(/dólar|merval|mercado|finanza/)) {
             if (input.match(/rosario/)) response = this.knowledge.weather_forecast['rosario'];
             else if (input.match(/buenos aires|caba|capital/)) response = this.knowledge.weather_forecast['buenos aires'];
             else if (input.match(/cordoba|córdoba/)) response = this.knowledge.weather_forecast['cordoba'];
