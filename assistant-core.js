@@ -274,6 +274,40 @@ class AssistantCore {
     onHeard(transcript) {
         if (this.brain) this.brain.think(transcript);
     }
+
+    startTimer(minutes) {
+        if (!minutes || minutes <= 0) return;
+        const ms = minutes * 60 * 1000;
+        console.log(`[AssistantCore] Temporizador iniciado: ${minutes} minutos.`);
+
+        setTimeout(() => {
+            this.playAlarmSound();
+            const msg = `¡Atención! Han pasado los ${minutes} minutos de tu pausa. Estoy lista para retomar.`;
+            this.addMessage(msg, 'ana');
+            this.speak(msg);
+            if (this.anaCharacter) this.anaCharacter.setPose('happy');
+        }, ms);
+    }
+
+    playAlarmSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // La nota La (A5)
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 1.5); // Sonar por 1.5 seg
+        } catch (e) {
+            console.warn("No se pudo reproducir el sonido de la alarma", e);
+        }
+    }
 }
 
 window.addEventListener('load', () => {

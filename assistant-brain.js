@@ -339,6 +339,19 @@ class AssistantBrain {
             poseToSet = 'presenter';
         }
 
+        else if (input.match(/temporizador|timer|avísame en|avisame en/)) {
+            const minMatch = input.match(/(\d+)/);
+            if (minMatch) {
+                const mins = parseInt(minMatch[1]);
+                this.core.startTimer(mins);
+                response = `Entendido. He configurado un temporizador de ${mins} minutos. Nos vemos en un rato, estaré atenta para avisarte.`;
+                poseToSet = 'happy';
+            } else {
+                response = "¿De cuántos minutos quieres el temporizador?";
+                poseToSet = 'thinking';
+            }
+        }
+
         // --- 7. FALLBACK PREDICTIVO (Por si no entiende) ---
         else {
             if (input.match(/por qué|cómo|cuando/)) {
