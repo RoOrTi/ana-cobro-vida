@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ana — Asistente Virtual Premium</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ana AI">
     <link href="./ana-theme.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -15,9 +19,11 @@
     <div class="intro-overlay" id="intro">
         <div class="intro-logo">ANA</div>
         <div class="intro-subtitle">Asistente Virtual Inteligente</div>
-        <div class="intro-loader">
+        <div class="intro-loader" id="introLoader">
             <div class="intro-loader-bar"></div>
         </div>
+        <button id="startBtn"
+            style="display:none; margin-top:40px; background:var(--ana-gold); border:none; padding:12px 40px; border-radius:50px; font-weight:bold; cursor:pointer; color:black;">ENTRAR</button>
     </div>
 
     <div class="bg-canvas"></div>
@@ -102,15 +108,29 @@
     <script src="./assistant-core.js"></script>
 
     <script>
-        // Simple intro screen handle
         window.addEventListener('load', () => {
+            const intro = document.getElementById('intro');
+            const loader = document.getElementById('introLoader');
+            const startBtn = document.getElementById('startBtn');
+
+            // Simular carga
             setTimeout(() => {
-                const intro = document.getElementById('intro');
+                if (loader) loader.style.display = 'none';
+                if (startBtn) startBtn.style.display = 'block';
+            }, 1500);
+
+            startBtn.addEventListener('click', () => {
+                // Desbloquear audio para iOS/Safari
+                if (window.speechSynthesis) {
+                    const utterance = new SpeechSynthesisUtterance('');
+                    window.speechSynthesis.speak(utterance);
+                }
+
                 if (intro) {
                     intro.style.opacity = '0';
                     setTimeout(() => intro.remove(), 800);
                 }
-            }, 2000);
+            });
         });
     </script>
 </body>

@@ -1,0 +1,21 @@
+{
+    "name": "Ana — Asistente Virtual",
+    "short_name": "Ana",
+    "description": "Asistente Virtual Inteligente con IA y datos financieros.",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#04060f",
+    "theme_color": "#00d4ff",
+    "icons": [
+        {
+            "src": "https://via.placeholder.com/192/04060f/00d4ff?text=ANA",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://via.placeholder.com/512/04060f/00d4ff?text=ANA",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
