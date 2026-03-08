@@ -21,6 +21,14 @@ const ANA_SVG_TEMPLATE = `
   box-sizing: border-box;
 }
 
+/* Contenedor interno sin transición, maneja la respiración a 30fps */
+.ana-holo-wrap-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: translateY(var(--ana-anim-y, 0px));
+}
+
 .ana-holo-img-wrap {
   position: relative;
   width: 100%;
@@ -42,12 +50,10 @@ const ANA_SVG_TEMPLATE = `
   
   /* <--- COORDENADAS MAGNÉTICAS ---> */
   transform-origin: 50% 50%;
-  /* Aplicamos los valores exactos definidos por testeo manual */
-  /* Usamos variables CSS para que los gestos no rompan la alineación base */
+  /* Aplicamos los valores exactos y transiciones suaves */
   transform: 
     scale(var(--ana-g-scale, 1)) 
-    translate(var(--ana-g-x, 0px), calc(10px + var(--ana-g-y, 0px))) 
-    translateY(var(--ana-anim-y, 0px));
+    translate(var(--ana-g-x, 0px), calc(10px + var(--ana-g-y, 0px)));
   
   /* Eliminamos saturate y brightness que causan "ruido" o distorsión en la piel */
   filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
@@ -70,8 +76,7 @@ const ANA_SVG_TEMPLATE = `
 #anaTalkOpen, #anaTalkHalf, #anaTalkClosed {
   transform: 
     scale(var(--ana-mouth-s, 1)) 
-    translate(0px, calc(10px + var(--ana-mouth-y, 0px))) 
-    translateY(var(--ana-anim-y, 0px)) !important;
+    translate(0px, calc(10px + var(--ana-mouth-y, 0px))) !important;
   transition: none !important;
 }
 
@@ -228,61 +233,56 @@ class AnaCharacter {
     const p = data.parametros;
     const root = this.avatarWrap;
 
+    let gy = 0;
+    let scale = 1;
+
     // BOCA: apertura y curvatura independientes
     if (p.boca) {
       if (p.boca.apertura) {
         root.style.setProperty('--ana-mouth-s', p.boca.apertura.escala);
       }
       if (p.boca.curvatura) {
-        // Curvatura positiva = sonrisa (mueve boca hacia arriba)
         const curva = p.boca.curvatura.escala * 8;
         root.style.setProperty('--ana-mouth-y', `${-curva}px`);
       }
     }
 
-    // MEJILLAS: coordinadas con la sonrisa (elevan leve el conjunto facial)
+    // MEJILLAS: coordinadas con la sonrisa
     if (p.mejillas && p.mejillas.elevacion) {
-      const elev = p.mejillas.elevacion.escala * 6;
-      root.style.setProperty('--ana-g-y', `-${elev}px`);
+      gy -= p.mejillas.elevacion.escala * 6;
     }
 
-    // OJOS: cierre parcial = leve zoom + bajada de cejas superior
+    // OJOS: cierre parcial (entrecerrar)
     if (p.ojos) {
       const cierre = p.ojos.cierre_parcial || p.ojos.cierre;
       if (cierre) {
-        // Cierre parcial: leve agrandamiento percibido (mejillas suben, ojos se achican)
-        const escala = 1 + (cierre.escala * 0.04);
-        root.style.setProperty('--ana-g-scale', escala);
-        // Subir imagen levemente para compensar el zoom (para que no se corte la cabeza)
-        const shift = cierre.escala * 3;
-        const currentY = parseFloat(root.style.getPropertyValue('--ana-g-y') || '0');
-        root.style.setProperty('--ana-g-y', `${currentY - shift}px`);
+        scale += (cierre.escala * 0.04);
+        gy -= cierre.escala * 3;
       }
     }
 
-    // CEJAS: ascenso (sorpresa) o descenso (ceño)
+    // CEJAS: ascenso o descenso
     if (p.cejas) {
       if (p.cejas.ascenso) {
-        // Sorpresa: leve scale-up y desplazamiento hacia arriba
-        const asc = p.cejas.ascenso.escala * 5;
-        root.style.setProperty('--ana-g-y', `${-(asc)}px`);
+        gy -= p.cejas.ascenso.escala * 5;
       }
       if (p.cejas.ligera_descenso || p.cejas.descenso) {
         const desc = (p.cejas.ligera_descenso || p.cejas.descenso).escala * 3;
-        root.style.setProperty('--ana-g-y', `${desc}px`);
+        gy += desc;
       }
     }
 
-    // FRENTE: arrugas = leve compress vertical
+    // FRENTE: arrugas (leve compresión)
     if (p.frente && p.frente.arrugas) {
-      const arruga = p.frente.arrugas.escala * 0.02;
-      const currScale = parseFloat(root.style.getPropertyValue('--ana-g-scale') || '1');
-      root.style.setProperty('--ana-g-scale', currScale - arruga);
+      scale -= p.frente.arrugas.escala * 0.02;
     }
+
+    // Aplicar los cálculos consolidados
+    root.style.setProperty('--ana-g-y', `${gy}px`);
+    root.style.setProperty('--ana-g-scale', scale);
 
     console.log(`[Ana] Gesto aplicado: ${data.gesto}`);
 
-    // Si tiene duración, resetear después
     if (data.duracion) {
       const ms = parseFloat(data.duracion) * 1000;
       setTimeout(() => this.resetGestures(), ms);
