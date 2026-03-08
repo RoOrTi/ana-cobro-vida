@@ -44,6 +44,12 @@
     margin-bottom: 15px;
 }
 
+.sidebar-agenda.drag-active, .input-area.drag-active {
+    background: rgba(0, 210, 255, 0.1) !important;
+    border: 2px dashed var(--ana-gold) !important;
+    border-radius: 12px;
+}
+
 .agenda-list {
     display: flex;
     flex-direction: column;

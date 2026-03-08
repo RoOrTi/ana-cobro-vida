@@ -27,6 +27,8 @@ class AssistantCore {
         this.checkPendingAlarms();
         this.bindEvents();
         this.setupFluidCommunication();
+        this.setupDragAndDrop();
+        this.setupPasteHandler();
 
         // Asegurar que las alarmas se verifiquen al despertar la PC/volver a la pestaña
         window.addEventListener('focus', () => this.checkPendingAlarms());
@@ -218,6 +220,56 @@ class AssistantCore {
         if (ti) ti.classList.remove('visible');
     }
 
+    setupDragAndDrop() {
+        const dropZones = [document.querySelector('.sidebar-agenda'), document.querySelector('.input-area')];
+
+        dropZones.forEach(zone => {
+            if (!zone) return;
+
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('drag-active');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-active');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-active');
+
+                const text = e.dataTransfer.getData('text');
+                const files = e.dataTransfer.files;
+
+                if (text) {
+                    this.addTask(text);
+                    this.speak(`He anotado "${text.substring(0, 30)}..." en tu agenda.`);
+                } else if (files.length > 0) {
+                    for (let f of files) {
+                        this.addTask(`Revisar: ${f.name}`);
+                    }
+                    this.speak(`Agregué ${files.length} archivos como tareas para revisar.`);
+                }
+            });
+        });
+    }
+
+    setupPasteHandler() {
+        document.addEventListener('paste', (e) => {
+            // Solo actuar si el usuario no tiene el foco en el chat-input (para evitar duplicados)
+            if (document.activeElement.id === 'chat-input') return;
+
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+            if (pasteData && pasteData.length > 2) {
+                if (confirm(`¿Quieres agregar esto como tarea a la agenda?:\n\n"${pasteData.substring(0, 100)}..."`)) {
+                    this.addTask(pasteData);
+                    this.speak("Anotado en agenda.");
+                }
+            }
+        });
+    }
+
     toggleListening() {
         if (!this.recognition) return;
         this.isListening ? this.recognition.stop() : this.recognition.start();
@@ -318,13 +370,52 @@ class AssistantCore {
         localStorage.removeItem('ana-alarm');
         this.playAlarmSound();
 
-        const msg = `¡Atención! Se ha cumplido el tiempo de tu alarma de ${mins} minutos. Estoy lista para retomar en Rosario.`;
+        const msg = `¡Atención! Se ha cumplido el tiempo de tu alarma de ${mins} minutos.`;
         this.addMessage(msg, 'ana');
         this.speak(msg);
 
         if (this.anaCharacter) {
             this.anaCharacter.setPose('happy');
-            // Alerta visual: pulso de luz en el holograma
+
+            // --- ALERTA VISUAL PREMIUM ---
+            const overlay = document.createElement('div');
+            overlay.className = 'ana-alert-overlay';
+            overlay.innerHTML = `
+                <div class="alert-content">
+                    <img src="./ana-alert.png" class="alert-img" onerror="this.src='https://via.placeholder.com/300?text=ALERTA'">
+                    <div class="alert-text">TIEMPO CUMPLIDO</div>
+                    <button class="alert-close">¡VAMOS!</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Estilos dinámicos para la alerta
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .ana-alert-overlay {
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+                    display: flex; align-items: center; justify-content: center;
+                    z-index: 10000; animation: anaFadeIn 0.5s ease;
+                }
+                .alert-content {
+                    text-align: center; color: white; transform: scale(0.9);
+                    animation: anaPopIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                }
+                .alert-img { width: 320px; height: 320px; border-radius: 25px; box-shadow: 0 0 40px #00d2ff; margin-bottom: 25px; object-fit: cover; border: 2px solid rgba(0,210,255,0.5); }
+                .alert-text { font-size: 2.2rem; font-weight: 900; letter-spacing: 4px; margin-bottom: 25px; text-shadow: 0 0 15px #00d2ff; }
+                .alert-close { background: linear-gradient(135deg, #00d2ff, #0072ff); border: none; padding: 12px 40px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; font-size: 1.1rem; }
+                .alert-close:hover { transform: scale(1.15); box-shadow: 0 0 25px #00d2ff; }
+                @keyframes anaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes anaPopIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            `;
+            document.head.appendChild(style);
+
+            overlay.querySelector('.alert-close').onclick = () => {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 500);
+            };
+
             const holo = document.getElementById('anaAvatarWrap');
             if (holo) {
                 holo.classList.add('ana-speaking');
@@ -336,20 +427,30 @@ class AssistantCore {
     playAlarmSound() {
         try {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            const playNote = (freq, duration, startOffset) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+                osc.type = 'triangle'; // Sonido más rico y orgánico
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startOffset);
 
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // La nota La (A5)
-            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + startOffset);
+                gain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + startOffset + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + startOffset + duration);
 
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 1.5); // Sonar por 1.5 seg
+                osc.start(audioCtx.currentTime + startOffset);
+                osc.stop(audioCtx.currentTime + startOffset + duration);
+            };
+
+            // Secuencia energética y alegre: Do, Mi, Sol, Do (Octava arriba)
+            playNote(523.25, 0.4, 0);    // C5
+            playNote(659.25, 0.4, 0.15); // E5
+            playNote(783.99, 0.4, 0.3);  // G5
+            playNote(1046.50, 0.8, 0.45); // C6
         } catch (e) {
-            console.warn("No se pudo reproducir el sonido de la alarma", e);
+            console.warn("Audio error", e);
         }
     }
 }
