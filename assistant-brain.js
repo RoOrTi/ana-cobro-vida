@@ -347,6 +347,18 @@ class AssistantBrain {
             poseToSet = 'presenter';
         }
 
+        // --- 🎵 NOTTE MAGICA: reproducir en cualquier momento ---
+        else if (input.match(/notte|magica|noche m[aá]gica|italia|mundial.*90|90.*mundial|gianna|nannini|estate|cancion.*alarm|alarm.*cancion/)) {
+            if (this.core) this.core.playNotteMagica();
+            response = this.pick([
+                "🎵 ¡Un'estate italiana! La canción del Mundial del 90... ¡Qué recuerdos!",
+                "🎵 Gianna Nannini en tu pantalla. ¡Que suene Notte Magica!",
+                "🎵 Italia 90, la mejor melodía de cualquier Mundial. ¡Ahí va!",
+                "🎵 Tocando Notte Magica para vos. ¡Un clásico eterno!"
+            ]);
+            poseToSet = 'happy';
+        }
+
         // --- ALARMA: siempre 30 minutos, sin importar lo que diga el usuario ---
         else if (input.match(/\balarma\b/)) {
             this.core.startTimer(30);
