@@ -30,8 +30,12 @@ class AssistantCore {
         this.setupDragAndDrop();
         this.setupPasteHandler();
 
+        this.startMarketMonitor();
         // Asegurar que las alarmas se verifiquen al despertar la PC/volver a la pestaña
-        window.addEventListener('focus', () => this.checkPendingAlarms());
+        window.addEventListener('focus', () => {
+            this.checkPendingAlarms();
+            this.fetchMarketData(); // Refrescar mercados al volver
+        });
         console.log('AssistantCore: Ready for Ana Premium.');
     }
 
@@ -297,6 +301,54 @@ class AssistantCore {
             };
             container.appendChild(chip);
         });
+    }
+
+    // --- MONITOR DE MERCADO EN VIVO ---
+
+    startMarketMonitor() {
+        // Primera carga inmediata
+        setTimeout(() => this.fetchMarketData(), 2000);
+        // Cada 2 min
+        setInterval(() => this.fetchMarketData(), 120000);
+    }
+
+    async fetchMarketData() {
+        if (!this.brain) return;
+        await this.brain.fetchMarketIndices();
+        this.updateMarketTicker(this.brain.financialData);
+    }
+
+    updateMarketTicker(data) {
+        const ticker = document.getElementById('marketTicker');
+        if (!ticker || !data || !data.market_summary) return;
+
+        const summary = data.market_summary;
+        const rates = summary.exchange_rates;
+        const indices = summary.indices;
+
+        const format = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
+        const formatVar = (v) => v >= 0 ? `<span class="var-up">▲ ${v}%</span>` : `<span class="var-down">▼ ${v}%</span>`;
+
+        ticker.innerHTML = `
+            <div class="ticker-item">
+                <span class="ticker-label">BLUE</span>
+                <span class="ticker-value">${format(rates.dolar_blue.venta)}</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">MEP</span>
+                <span class="ticker-value">${format(rates.dolar_mep.valor)}</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">RP</span>
+                <span class="ticker-value">${indices.riesgo_pais.valor}</span>
+                <span class="ticker-var">${formatVar(indices.riesgo_pais.variation)}</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">MERVAL</span>
+                <span class="ticker-value">${Math.floor(indices.merval.valor / 1000)}k</span>
+                <span class="ticker-var">${formatVar(indices.merval.variation)}</span>
+            </div>
+        `;
     }
 
     speak(text) {

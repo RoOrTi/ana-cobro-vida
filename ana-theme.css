@@ -44,7 +44,8 @@
     margin-bottom: 15px;
 }
 
-.sidebar-agenda.drag-active, .input-area.drag-active {
+.sidebar-agenda.drag-active,
+.input-area.drag-active {
     background: rgba(0, 210, 255, 0.1) !important;
     border: 2px dashed var(--ana-gold) !important;
     border-radius: 12px;
@@ -324,6 +325,59 @@ body {
     margin-top: 4px;
 }
 
+.market-ticker {
+    margin-top: 15px;
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 8px 0;
+    scrollbar-width: none;
+    /* Ocultar scrollbar */
+}
+
+.market-ticker::-webkit-scrollbar {
+    display: none;
+}
+
+.ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ana-text);
+}
+
+.ticker-label {
+    color: var(--ana-text-muted);
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 1px;
+}
+
+.ticker-value {
+    color: var(--ana-gold);
+    border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+    padding-bottom: 1px;
+}
+
+.ticker-var {
+    font-size: 10px;
+}
+
+.var-up {
+    color: #4ade80;
+}
+
+.var-down {
+    color: #f87171;
+}
+
+.var-neutral {
+    color: var(--ana-text-muted);
+}
+
 .messages-container {
     flex: 1;
     overflow-y: auto;
@@ -461,7 +515,8 @@ body {
     background: radial-gradient(circle at 50% 40%, rgba(0, 150, 255, 0.08) 0%, rgba(90, 40, 200, 0.04) 50%, transparent 70%),
         linear-gradient(180deg, rgba(6, 10, 28, 0.95) 0%, rgba(4, 6, 18, 0.98) 100%);
     position: relative;
-    overflow: hidden; /* Oculta cualquier rebalse de la ropa si se amplia mucho */
+    overflow: hidden;
+    /* Oculta cualquier rebalse de la ropa si se amplia mucho */
 }
 
 .ana-avatar-container {
