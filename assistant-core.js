@@ -24,6 +24,7 @@ class AssistantCore {
             console.log('AssistantCore: Brain connected.');
         }
 
+        this.checkPendingAlarms();
         this.bindEvents();
         this.setupFluidCommunication();
         console.log('AssistantCore: Ready for Ana Premium.');
@@ -277,16 +278,55 @@ class AssistantCore {
 
     startTimer(minutes) {
         if (!minutes || minutes <= 0) return;
-        const ms = minutes * 60 * 1000;
-        console.log(`[AssistantCore] Temporizador iniciado: ${minutes} minutos.`);
+        const endTime = Date.now() + (minutes * 60 * 1000);
+        localStorage.setItem('ana-alarm', JSON.stringify({ endTime, minutes }));
 
-        setTimeout(() => {
-            this.playAlarmSound();
-            const msg = `¡Atención! Han pasado los ${minutes} minutos de tu pausa. Estoy lista para retomar.`;
-            this.addMessage(msg, 'ana');
-            this.speak(msg);
-            if (this.anaCharacter) this.anaCharacter.setPose('happy');
-        }, ms);
+        console.log(`[AssistantCore] Alarma programada: ${minutes} minutos. Finaliza en: ${new Date(endTime).toLocaleTimeString()}`);
+
+        this.setupAlarmCheck(minutes * 60 * 1000);
+    }
+
+    setupAlarmCheck(delay) {
+        if (this.currentTimer) clearTimeout(this.currentTimer);
+        this.currentTimer = setTimeout(() => {
+            this.triggerAlarm();
+        }, delay);
+    }
+
+    checkPendingAlarms() {
+        const alarmData = JSON.parse(localStorage.getItem('ana-alarm'));
+        if (alarmData) {
+            const now = Date.now();
+            if (now >= alarmData.endTime) {
+                // Ya pasó mientras estaba cerrado/suspendido
+                this.triggerAlarm();
+            } else {
+                // Re-programar el tiempo restante
+                this.setupAlarmCheck(alarmData.endTime - now);
+            }
+        }
+    }
+
+    triggerAlarm() {
+        const alarmData = JSON.parse(localStorage.getItem('ana-alarm'));
+        const mins = alarmData ? alarmData.minutes : 10;
+
+        localStorage.removeItem('ana-alarm');
+        this.playAlarmSound();
+
+        const msg = `¡Atención! Se ha cumplido el tiempo de tu alarma de ${mins} minutos. Estoy lista para retomar en Rosario.`;
+        this.addMessage(msg, 'ana');
+        this.speak(msg);
+
+        if (this.anaCharacter) {
+            this.anaCharacter.setPose('happy');
+            // Alerta visual: pulso de luz en el holograma
+            const holo = document.getElementById('anaAvatarWrap');
+            if (holo) {
+                holo.classList.add('ana-speaking');
+                setTimeout(() => holo.classList.remove('ana-speaking'), 3000);
+            }
+        }
     }
 
     playAlarmSound() {
