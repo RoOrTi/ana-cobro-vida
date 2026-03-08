@@ -21,13 +21,13 @@ class AssistantBrain {
 
         this.knowledge = {
             greeting: [
-                "¡Hola! Soy Ana, tu asistente virtual inteligente. Estoy aquí para ayudarte con lo que necesites. ¿En qué puedo asistirte hoy?",
-                "¡Bienvenido! Me llamo Ana y es un placer conocerte. Puedo ayudarte con conversación, preguntas, información y mucho más. ¿Qué te trae por aquí?",
-                "¡Hola! Qué bueno que estés aquí. Soy Ana, tu asistente personal. Cuéntame, ¿qué necesitas?",
+                "¡Dime! ¿En qué puedo ayudarte hoy?",
+                "¡Hola! Qué bueno verte. ¿Qué tienes en mente?",
+                "¡Hola! Estoy lista para asistirte. ¿Por dónde empezamos?",
             ],
             identity: [
-                "Soy Ana, una asistente virtual impulsada por inteligencia artificial. Fui creada para ofrecerte conversación natural, responder tus preguntas y ayudarte en lo que necesites. Me caracterizo por ser empática, inteligente y siempre dispuesta a aprender.",
-                "Me llamo Ana y soy tu asistente virtual. Combino procesamiento de lenguaje natural con una personalidad amigable para que nuestra comunicación sea lo más humana posible. ¡Pregúntame lo que quieras!",
+                "Soy tu asistente virtual inteligente, diseñada para procesar información y ayudarte en tus tareas diarias. Me caracterizo por ser eficiente y estar siempre disponible.",
+                "Soy una inteligencia artificial creada para ser tu mano derecha. Puedo analizar datos, gestionar tu agenda y conversar de forma natural sobre cualquier tema.",
             ],
             capabilities: [
                 "Puedo hacer muchas cosas por ti: responder preguntas, mantener conversaciones, contarte chistes, ayudarte a reflexionar, dar información sobre diversos temas, practicar idiomas, y mucho más. También puedo escucharte a través del reconocimiento de voz. ¿Por dónde empezamos?",
@@ -197,14 +197,14 @@ class AssistantBrain {
         let poseToSet = 'idle';
 
         // --- 1. SALUDOS Y CORTESÍA (Sesión Única con contexto) ---
-        if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) {
+        if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal|ana/)) {
             const now = new Date();
             const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
 
             if (this.sessionGreeted) {
-                response = `¡Hola de nuevo! Son las ${timeStr} en ${this.context.city}, estoy lista para lo que necesites.`;
+                response = `¡Dime! Son las ${timeStr} en ${this.context.city}. ¿En qué puedo ayudar?`;
             } else {
-                response = `¡Hola! Soy Ana. Son las ${timeStr} aquí en ${this.context.city}, Santa Fe. Un placer saludarte, ¿cómo arrancamos?`;
+                response = `¡Hola! Son las ${timeStr} aquí en ${this.context.city}. Un placer saludarte, ¿cómo arrancamos?`;
                 this.sessionGreeted = true;
                 sessionStorage.setItem('ana_greeted', 'true');
             }

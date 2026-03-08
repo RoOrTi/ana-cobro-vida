@@ -27,6 +27,9 @@ class AssistantCore {
         this.checkPendingAlarms();
         this.bindEvents();
         this.setupFluidCommunication();
+
+        // Asegurar que las alarmas se verifiquen al despertar la PC/volver a la pestaña
+        window.addEventListener('focus', () => this.checkPendingAlarms());
         console.log('AssistantCore: Ready for Ana Premium.');
     }
 
@@ -267,6 +270,7 @@ class AssistantCore {
 
         utterance.onend = () => {
             if (this.anaCharacter) this.anaCharacter.stopSpeaking();
+            document.dispatchEvent(new CustomEvent('anaFinishedSpeaking'));
         };
 
         this.synth.speak(utterance);
