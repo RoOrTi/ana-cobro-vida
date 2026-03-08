@@ -30,6 +30,13 @@ class AssistantCore {
         this.setupDragAndDrop();
         this.setupPasteHandler();
 
+        // Registro de Service Worker para Android/PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Ana: Service Worker registrado.'))
+                .catch(err => console.log('Ana: Error SW', err));
+        }
+
         this.startMarketMonitor();
         // Asegurar que las alarmas se verifiquen al despertar la PC/volver a la pestaña
         window.addEventListener('focus', () => {
