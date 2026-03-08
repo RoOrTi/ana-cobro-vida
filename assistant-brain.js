@@ -81,7 +81,13 @@ class AssistantBrain {
                 "cedears": "Los CEDEARs son excelentes para escapar del riesgo local y dolarizar la cartera indirectamente. Te sugiero mirar el sector tecnológico (SPY, AAPL) a largo plazo.",
                 "cripto": "El ecosistema cripto sigue siendo muy volátil. Bitcoin es un excelente oro digital, pero recomiendo no exponer más del cinco por ciento de tu cartera total.",
                 "riesgo_pais": "El riesgo país es nuestro termómetro de confianza internacional. Si sube, los bonos locales sufren. Hay que seguirlo a diario."
-            }
+            },
+            investment_advice: [
+                "Como analista, mi primer consejo es la diversificación. No pongas todos tus huevos en la misma canasta. Un mix entre CEDEARs, ONs y algo de liquidez en MEP es una base sólida.",
+                "Para un perfil conservador, las Obligaciones Negociables (ONs) de empresas exportadoras están rindiendo muy bien en dólares. Para algo más agresivo, el Merval tiene empresas con mucho potencial de recuperación.",
+                "Mi recomendación para hoy: mantén una parte en liquidez (Dólar MEP) para aprovechar oportunidades si el mercado corrige, y el resto en activos que ajusten por inflación o tipo de cambio.",
+                "Si buscas largo plazo, los índices de Estados Unidos como el S&P 500 vía CEDEARs son el estándar de oro. Te dan exposición a las mejores empresas del mundo desde tu cuenta local."
+            ]
         };
     }
 
@@ -240,6 +246,10 @@ class AssistantBrain {
         else if (input.match(/riesgo país|riesgo pais|bonos|deuda/)) {
             response = this.knowledge.financial_deep.riesgo_pais;
             poseToSet = 'serious';
+        }
+        else if (input.match(/consejo|invertir|inversión|inversiones|qué compro|que compro|recomendación|recomienda/)) {
+            response = this.pick(this.knowledge.investment_advice);
+            poseToSet = 'thinking';
         }
 
         // --- 5. FINANZAS: TIEMPO REAL (DÓLAR / MERVAL) ---
