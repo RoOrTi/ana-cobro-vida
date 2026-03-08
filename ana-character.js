@@ -48,9 +48,9 @@ const ANA_SVG_TEMPLATE = `
   /* Eliminamos saturate y brightness que causan "ruido" o distorsión en la piel */
   filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
     
-  /* Suavizamos la máscara para evitar bordes "sucios" */
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
-  mask-image: linear-gradient(to right, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+  /* Suavizamos la máscara para dar más espacio a las expresiones */
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%);
   
   pointer-events: none;
   image-rendering: auto; /* Dejar que el navegador maneje el suavizado */
@@ -85,17 +85,17 @@ const ANA_SVG_TEMPLATE = `
   opacity: 1;
 }
 
-/* --- GESTO: RISA (Basado en parámetros JSON) --- */
-.app-layout:has(.ana-speaking) #anaAvatarWrap.pose-happy .ana-holo-img {
-  /* Elevación de mejillas y curvatura (Esclala 0.9 / 0.7) */
-  transform: scale(1.02) translateY(var(--ana-anim-y, 0px)) perspective(1000px) rotateX(2deg);
-  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)) brightness(1.05);
+/* --- GESTO: RISA (Ajuste Seguro) --- */
+#anaAvatarWrap.pose-happy .ana-holo-img {
+  /* Mantenemos el offset original (0, 10px) y agregamos sutil escala */
+  transform: scale(1.02) translate(0, 10px) translateY(var(--ana-anim-y, 0px));
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.3));
 }
 
-.pose-happy #anaTalkOpen, .pose-happy #anaTalkHalf {
-  /* Curvatura de boca hacia arriba (Mueca amigable) */
-  clip-path: ellipse(100% 85% at 50% 40%); 
-  transform: scale(0.95, 0.9) translateY(5px);
+#anaAvatarWrap.pose-happy #anaTalkOpen, 
+#anaAvatarWrap.pose-happy #anaTalkHalf {
+  /* Curvatura de boca amigable mediante escala vertical */
+  transform: scale(1, 0.9) translate(0, 12px);
 }
 </style>
 
@@ -261,11 +261,15 @@ class AnaCharacter {
 
   stopSpeaking() {
     this.isSpeaking = false;
-    this.isPaused = false; // Reanuda el parpadeo natural
+    this.isPaused = false;
     this.targetMouthFrame = 4;
-    this.setPose('idle'); // Vuelve a la pose inicial
 
-    if (this.avatarWrap) this.avatarWrap.classList.remove('ana-speaking');
+    // Limpiar clases visuales al callar
+    if (this.avatarWrap) {
+      this.avatarWrap.classList.remove('ana-speaking', 'pose-happy', 'pose-thinking', 'pose-serious');
+    }
+    this.setPose('idle');
+
     document.dispatchEvent(new CustomEvent('anaFinishedSpeaking'));
   }
 }
