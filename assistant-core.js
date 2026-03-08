@@ -249,9 +249,10 @@ class AssistantCore {
 
         // Clean text for speech: remove markdown symbols like *, #, _ and excessive breaks
         const cleanText = text
-            .replace(/[*#_~]/g, '') // Remove markdown symbols
-            .replace(/\n-/g, ', ')   // Convert list dashes to commas for natural flow
-            .replace(/\n+/g, ' ')    // Remove line breaks
+            .replace(/\$/g, ' dolar ') // Asegurar que diga dolar
+            .replace(/[*#_~]/g, '')    // Remove markdown symbols
+            .replace(/\n-/g, ', ')      // Convert list dashes to commas for natural flow
+            .replace(/\n+/g, ' ')       // Remove line breaks
             .trim();
 
         const utterance = new SpeechSynthesisUtterance(cleanText);

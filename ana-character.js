@@ -153,8 +153,8 @@ class AnaCharacter {
     let p = 0;
 
     this.lifeCycleInterval = setInterval(() => {
-      t += 0.04;
-      p += 0.45;
+      t += 0.02;
+      p += 0.15;
 
       const totalY = Math.sin(t) * 2;
 
@@ -162,7 +162,7 @@ class AnaCharacter {
       if (this.isSpeaking) {
         // Ciclo de frames: 2 (Open), 3 (Half), 4 (Closed)
         // Reducimos la velocidad (p * 0.7 en lugar de p * 2) para que sea más natural y menos 'frenético'
-        const frameCycle = Math.floor(p * 0.7) % 3;
+        const frameCycle = Math.floor(p * 1.25) % 3;
         this.currentSlide = 2 + frameCycle;
         this.updateSlides();
       }
