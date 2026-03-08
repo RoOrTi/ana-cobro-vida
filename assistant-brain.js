@@ -346,28 +346,72 @@ class AssistantBrain {
             poseToSet = 'presenter';
         }
 
-        else if (input.match(/temporizador|timer|atención|avísame|alarma|avisame/)) {
-            // Convertir palabras comunes de tiempo a números
-            let cleanInput = input.replace(/\bun\b|\buno\b|\buna\b/g, '1');
+        else if (input.match(/temporizador|timer|atenci[oó]n|av[ií]same|alarma|descanso|recordatorio|en \d|en un/)) {
+            // --- DICCIONARIO COMPLETO: palabras → números ---
+            const wordToNum = {
+                'un': 1, 'uno': 1, 'una': 1,
+                'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
+                'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
+                'once': 11, 'doce': 12, 'trece': 13, 'catorce': 14, 'quince': 15,
+                'dieciséis': 16, 'diecisiete': 17, 'dieciocho': 18, 'diecinueve': 19,
+                'veinte': 20, 'veintiuno': 21, 'veintidós': 22, 'veintitrés': 23,
+                'veinticuatro': 24, 'veinticinco': 25,
+                'treinta': 30, 'cuarenta': 40, 'cuarenta y cinco': 45, 'cincuenta': 50,
+                'sesenta': 60, 'media hora': 30
+            };
+
+            // Reemplazar palabras por números
+            let cleanInput = input;
+            for (const [word, num] of Object.entries(wordToNum)) {
+                cleanInput = cleanInput.replace(new RegExp(`\\b${word}\\b`, 'gi'), num);
+            }
+
             const minMatch = cleanInput.match(/(\d+)/);
 
             if (minMatch) {
                 const mins = parseInt(minMatch[1]);
-                this.core.startTimer(mins);
-                response = `Entendido. He configurado un temporizador de ${mins} minutos. Nos vemos en un minuto, te avisaré con sonido y luz.`;
-                poseToSet = 'happy';
-            } else if (input.includes('minuto')) {
-                // Caso especial "en un minuto" si el regex anterior fallara
-                this.core.startTimer(1);
-                response = "Perfecto, programé la alarma para dentro de un minuto.";
-                poseToSet = 'happy';
+                if (mins > 0 && mins <= 120) {
+                    this.core.startTimer(mins);
+                    const label = mins === 1 ? '1 minuto' : `${mins} minutos`;
+                    response = `Perfecto. Temporizador de ${label} activado. Te aviso cuando llegue la hora. 🕐`;
+                    poseToSet = 'happy';
+                } else {
+                    response = `El tiempo indicado (${mins} min) está fuera del rango. ¿Cuántos minutos querés?`;
+                    poseToSet = 'thinking';
+                }
             } else {
-                response = "¿De cuántos minutos quieres que sea la cuenta regresiva?";
+                // No se entendió el tiempo → Ofrecer opciones de accesibilidad
+                response = "No pude identificar la duración. ¿De cuántos minutos querés el temporizador?";
                 poseToSet = 'thinking';
+                // Disparar botones de selección rápida inmediatamente
+                if (this.core) {
+                    setTimeout(() => {
+                        this.core.showSuggestions([
+                            'Temporizador de 1 minuto',
+                            'Temporizador de 15 minutos',
+                            'Temporizador de 30 minutos'
+                        ]);
+                    }, 900);
+                }
             }
         }
 
-        // --- 7. FALLBACK PREDICTIVO (Por si no entiende) ---
+        // --- 7. DESCANSO / BREAK sin temporizador explícito ---
+        else if (input.match(/descanso|break|pausa|tomemos|vamos a descansar|nos descansamos/)) {
+            response = "¡Buena idea! ¿De cuántos minutos va a ser el descanso?";
+            poseToSet = 'happy';
+            if (this.core) {
+                setTimeout(() => {
+                    this.core.showSuggestions([
+                        'Temporizador de 1 minuto',
+                        'Temporizador de 15 minutos',
+                        'Temporizador de 30 minutos'
+                    ]);
+                }, 900);
+            }
+        }
+
+        // --- 8. FALLBACK PREDICTIVO (Por si no entiende) ---
         else {
             if (input.match(/por qué|cómo|cuando/)) {
                 response = "Esa es una pregunta interesante. En mi base de datos actual no tengo esa información cruzada, pero me lo apunto para estudiarlo.";
