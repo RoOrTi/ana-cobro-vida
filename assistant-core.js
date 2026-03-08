@@ -526,10 +526,27 @@ class AssistantCore {
     }
 
     setupAlarmCheck(delay) {
+        // Limpiar previos
         if (this.currentTimer) clearTimeout(this.currentTimer);
-        this.currentTimer = setTimeout(() => {
-            this.triggerAlarm();
-        }, delay);
+        if (this.alarmWatchdog) clearInterval(this.alarmWatchdog);
+
+        // setTimeout principal (puede ser throttleado por Chrome en background)
+        this.currentTimer = setTimeout(() => this.triggerAlarm(), delay);
+
+        // Watchdog cada 10 segundos: comprueba la hora real (como un reloj)
+        // Esto garantiza precisión aunque Chrome throttlee el setTimeout
+        this.alarmWatchdog = setInterval(() => {
+            const alarmData = JSON.parse(localStorage.getItem('ana-alarm'));
+            if (!alarmData) {
+                clearInterval(this.alarmWatchdog);
+                return;
+            }
+            if (Date.now() >= alarmData.endTime) {
+                clearTimeout(this.currentTimer);
+                clearInterval(this.alarmWatchdog);
+                this.triggerAlarm();
+            }
+        }, 10000); // cada 10 segundos
     }
 
     checkPendingAlarms() {
@@ -540,13 +557,23 @@ class AssistantCore {
                 // Ya pasó mientras estaba cerrado/suspendido
                 this.triggerAlarm();
             } else {
-                // Re-programar el tiempo restante
+                // Re-programar el tiempo restante + relanzar countdown
+                this.showCountdown(alarmData.endTime);
                 this.setupAlarmCheck(alarmData.endTime - now);
             }
         }
     }
 
     triggerAlarm() {
+        // Evitar doble disparo
+        if (this.alarmFired) return;
+        this.alarmFired = true;
+        setTimeout(() => { this.alarmFired = false; }, 3000);
+
+        // Limpiar todos los timers
+        if (this.currentTimer) clearTimeout(this.currentTimer);
+        if (this.alarmWatchdog) clearInterval(this.alarmWatchdog);
+
         const alarmData = JSON.parse(localStorage.getItem('ana-alarm'));
         const mins = alarmData ? alarmData.minutes : 10;
 
