@@ -52,8 +52,9 @@ const ANA_SVG_TEMPLATE = `
   transform-origin: 50% 50%;
   /* Aplicamos los valores exactos y transiciones suaves */
   transform: 
-    scale(var(--ana-g-scale, 1)) 
-    translate(var(--ana-g-x, 0px), calc(10px + var(--ana-g-y, 0px)));
+    scale(var(--ana-g-scale, 1))
+    translate(var(--ana-g-x, 0px), calc(10px + var(--ana-g-y, 0px)))
+    rotate(var(--ana-g-rot, 0deg));
   
   /* Eliminamos saturate y brightness que causan "ruido" o distorsión en la piel */
   filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
@@ -236,45 +237,52 @@ class AnaCharacter {
     let gy = 0;
     let scale = 1;
 
-    // BOCA: apertura y curvatura independientes
+    // BOCA: apertura (scale) y curvatura (Y) SUPER EXAGERADOS (*20)
     if (p.boca) {
       if (p.boca.apertura) {
         root.style.setProperty('--ana-mouth-s', p.boca.apertura.escala);
       }
       if (p.boca.curvatura) {
-        const curva = p.boca.curvatura.escala * 8;
+        const curva = p.boca.curvatura.escala * 20; // 💥 Sobreactuado (antes 8)
         root.style.setProperty('--ana-mouth-y', `${-curva}px`);
       }
     }
 
-    // MEJILLAS: coordinadas con la sonrisa
+    // MEJILLAS: coordinadas con la sonrisa EXAGERADAS (*15)
     if (p.mejillas && p.mejillas.elevacion) {
-      gy -= p.mejillas.elevacion.escala * 6;
+      gy -= p.mejillas.elevacion.escala * 15; // 💥 Sobreactuado (antes 6)
     }
 
-    // OJOS: cierre parcial (entrecerrar)
+    // OJOS: cierre parcial / achine EXAGERADO (*0.15 y *8)
     if (p.ojos) {
       const cierre = p.ojos.cierre_parcial || p.ojos.cierre;
       if (cierre) {
-        scale += (cierre.escala * 0.04);
-        gy -= cierre.escala * 3;
+        scale += (cierre.escala * 0.15); // 💥 Mucho más zoom aparente
+        gy -= cierre.escala * 8; // 💥 Compensa subiendo más (antes 3)
       }
     }
 
     // CEJAS: ascenso o descenso
     if (p.cejas) {
       if (p.cejas.ascenso) {
-        gy -= p.cejas.ascenso.escala * 5;
+        gy -= p.cejas.ascenso.escala * 12; // 💥 Sobreactuado
       }
       if (p.cejas.ligera_descenso || p.cejas.descenso) {
-        const desc = (p.cejas.ligera_descenso || p.cejas.descenso).escala * 3;
+        const desc = (p.cejas.ligera_descenso || p.cejas.descenso).escala * 8; // 💥 Sobreactuado
         gy += desc;
       }
     }
 
     // FRENTE: arrugas (leve compresión)
     if (p.frente && p.frente.arrugas) {
-      scale -= p.frente.arrugas.escala * 0.02;
+      scale -= p.frente.arrugas.escala * 0.05; // 💥 Sobreactuado
+    }
+
+    // INCLINACIÓN (Nuevo para gestos de ternura/alegría)
+    if (p.inclinacion) {
+      root.style.setProperty('--ana-g-rot', `${p.inclinacion.escala * 6}deg`); // Inclinar hasta 6 grados
+    } else {
+      root.style.setProperty('--ana-g-rot', '0deg');
     }
 
     // Aplicar los cálculos consolidados
