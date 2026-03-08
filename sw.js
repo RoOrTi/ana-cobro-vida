@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ana-cache-v4'; // Bumped: force Chrome to discard old corrupt cache
+const CACHE_NAME = 'ana-cache-v5'; // Bumped: force Chrome to discard old corrupt cache
 const urlsToCache = [
     './',
     './index.html',
