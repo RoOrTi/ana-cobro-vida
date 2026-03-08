@@ -101,7 +101,9 @@ class AnaCharacter {
     this.lifeCycleInterval = null;
     this.blinkTimeout = null;
     this.isSpeaking = false;
+    this.isPaused = false;
     this.currentSlide = 0; // 0=Open, 1=Half, 2=Closed
+    this.currentPose = 'idle';
     this.render();
     this.startBlinking();
     this.startLifeCycle();
@@ -122,24 +124,44 @@ class AnaCharacter {
   }
 
   /**
+   * Helper para esperar pero poder ser interrumpido si se pausa
+   */
+  async waitIfIdle(ms) {
+    const steps = ms / 100;
+    for (let i = 0; i < steps; i++) {
+      if (this.isPaused) return false; // Interrumpido
+      await new Promise(r => setTimeout(r, 100));
+    }
+    return true; // Completó el tiempo
+  }
+
+  /**
    * Secuencia explícita de parpadeo (10s, 2s, 3s)
    */
   startBlinking() {
     const blinkSequence = async () => {
+      if (this.isPaused) {
+        await new Promise(r => setTimeout(r, 500));
+        return blinkSequence();
+      }
+
       // 1. Ojos Abiertos (10 segundos)
       this.currentSlide = 0;
       this.updateSlides();
-      await new Promise(r => setTimeout(r, 10000));
+      let completed = await this.waitIfIdle(10000);
+      if (!completed) return blinkSequence();
 
       // 2. Ojos Semi-Abiertos (2 segundos)
       this.currentSlide = 1;
       this.updateSlides();
-      await new Promise(r => setTimeout(r, 2000));
+      completed = await this.waitIfIdle(2000);
+      if (!completed) return blinkSequence();
 
       // 3. Ojos Cerrados (3 segundos)
       this.currentSlide = 2;
       this.updateSlides();
-      await new Promise(r => setTimeout(r, 3000));
+      completed = await this.waitIfIdle(3000);
+      if (!completed) return blinkSequence();
 
       // Reiniciar ciclo
       blinkSequence();
@@ -202,13 +224,35 @@ class AnaCharacter {
     // This method is no longer used as blinking is handled by the slideshow
   }
 
+  setPose(poseName) {
+    this.currentPose = poseName;
+    console.log(`[Ana] Cambiando pose a: ${poseName}`);
+
+    // Si la pose no es idle, pausamos el parpadeo normal
+    if (poseName !== 'idle') {
+      this.isPaused = true;
+      // Aquí se podrían inyectar animaciones de emojis o efectos según la pose
+    } else {
+      this.isPaused = false;
+    }
+  }
+
   startSpeaking() {
     this.isSpeaking = true;
+    this.isPaused = true; // Pausa el parpadeo mientras habla
+
+    // Forzamos los ojos abiertos mientras habla (opcional, o semi)
+    this.currentSlide = 0;
+    this.updateSlides();
+
     if (this.avatarWrap) this.avatarWrap.classList.add('ana-speaking');
   }
 
   stopSpeaking() {
     this.isSpeaking = false;
+    this.isPaused = false; // Reanuda el parpadeo natural
+    this.setPose('idle'); // Vuelve a la pose inicial
+
     if (this.avatarWrap) this.avatarWrap.classList.remove('ana-speaking');
     document.dispatchEvent(new CustomEvent('anaFinishedSpeaking'));
   }

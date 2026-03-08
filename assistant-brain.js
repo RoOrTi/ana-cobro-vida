@@ -66,6 +66,21 @@ class AssistantBrain {
                 geopolitics: "La geopolítica domina la paridad de activos. En escenarios de tensión, el flujo de capital busca 'safe havens' y presiona el alza de commodities como el WTI y el Oro.",
                 decision_making: "La toma de decisiones bajo incertidumbre es clave. Un trader senior no opera noticias, opera la reacción del mercado a los fundamentos económicos.",
                 trader_strategy: "Mi estrategia recomendada hoy se basa en la neutralidad ante la volatilidad electoral y la búsqueda de yields reales ante la inflación proyectada."
+            },
+            functions_info: [
+                "Como tu IA personal, puedo: analizar en tiempo real los mercados, mostrarte gráficas financieras, darte previsiones del clima o simplemente asistir con tus tareas en la agenda. ¿Qué te gustaría hacer?",
+                "Mi sistema me permite monitorear cotizaciones de dólares y Merval. También puedo ayudarte con recordatorios y clima. ¡Tú eres el jefe!",
+            ],
+            weather_forecast: {
+                "buenos aires": "Para Buenos Aires prevemos un clima templado a cálido, típico de la estación actual. Siempre con algo de humedad.",
+                "rosario": "Para el área de Rosario las condiciones se mantienen estables. Excelente clima para estar cerca del Paraná.",
+                "cordoba": "En la zona serrana de Córdoba el clima está ideal, con días cálidos y noches muy agradables.",
+                "default": "Parece que el clima se mantiene estable en la mayoría de las regiones. Si te preocupa la lluvia, ¡siempre es bueno tener un paraguas!"
+            },
+            financial_deep: {
+                "cedears": "Los CEDEARs son excelentes para escapar del riesgo local y dolarizar la cartera indirectamente. Te sugiero mirar el sector tecnológico (SPY, AAPL) a largo plazo.",
+                "cripto": "El ecosistema cripto sigue siendo muy volátil. Bitcoin es un excelente oro digital, pero recomiendo no exponer más del cinco por ciento de tu cartera total.",
+                "riesgo_pais": "El riesgo país es nuestro termómetro de confianza internacional. Si sube, los bonos locales sufren. Hay que seguirlo a diario."
             }
         };
     }
@@ -148,90 +163,140 @@ class AssistantBrain {
         const input = userInput.toLowerCase().trim();
         let response = "";
         let chartData = null;
+        let poseToSet = 'idle';
 
+        // --- 1. SALUDOS Y CORTESÍA ---
         if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) {
             response = this.pick(this.knowledge.greeting);
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('happy');
+            poseToSet = 'happy';
         }
-        else if (input.match(/geopolit|geopolitica|macro|trader|toma de decisiones|decisión/)) {
+        else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) {
+            response = this.pick(this.knowledge.farewells);
+            poseToSet = 'idle';
+        }
+        else if (input.match(/gracias|thanks|agradezco/)) {
+            response = this.pick(this.knowledge.thanks);
+            poseToSet = 'happy';
+        }
+
+        // --- 2. IDENTIDAD Y CAPACIDADES (FUNCIONES) ---
+        else if (input.match(/quién eres|tu nombre|quien eres|cómo te llamas/)) {
+            response = this.pick(this.knowledge.identity);
+            poseToSet = 'presenter';
+        }
+        else if (input.match(/qué puedes|qué haces|qué sabes|capacidades|ayúdame|funciones|qué opciones/)) {
+            response = this.pick(this.knowledge.functions_info);
+            poseToSet = 'presenter';
+        }
+        else if (input.match(/chiste|broma|humor|gracioso|reír/)) {
+            response = this.pick(this.knowledge.jokes);
+            poseToSet = 'happy';
+        }
+        else if (input.match(/ia|inteligencia artificial|llm|gpt/)) {
+            response = this.pick(this.knowledge.ai_info);
+            poseToSet = 'thinking';
+        }
+
+        // --- 3. CLIMA Y TIEMPO ---
+        else if (input.match(/clima|tiempo|temperatura|llueve|lluvia|pronóstico/)) {
+            if (input.match(/rosario/)) response = this.knowledge.weather_forecast['rosario'];
+            else if (input.match(/buenos aires|caba|capital/)) response = this.knowledge.weather_forecast['buenos aires'];
+            else if (input.match(/cordoba|córdoba/)) response = this.knowledge.weather_forecast['cordoba'];
+            else response = this.knowledge.weather_forecast['default'];
+            poseToSet = 'presenter';
+        }
+
+        // --- 4. FINANZAS: MACRO, ACCIONES Y CRIPTO ---
+        else if (input.match(/geopolit|geopolitica|macro|trader|toma de decisiones|decisión|estrategia/)) {
             if (input.includes('geopolit')) response = this.knowledge.macro_trading.geopolitics;
             else if (input.match(/decisión|decimal/)) response = this.knowledge.macro_trading.decision_making;
             else response = this.knowledge.macro_trading.trader_strategy;
+            poseToSet = 'serious';
+        }
+        else if (input.match(/cedear|cedears|apple|spy|acciones extranjeras/)) {
+            response = this.knowledge.financial_deep.cedears;
+            poseToSet = 'thinking';
+        }
+        else if (input.match(/cripto|crypto|bitcoin|btc|ethereum|eth/)) {
+            if (input.match(/bitcoin|btc/)) response = this.knowledge.tech_info.bitcoin;
+            else if (input.match(/ethereum|eth/)) response = this.knowledge.tech_info.ethereum;
+            else response = this.knowledge.financial_deep.cripto;
+            poseToSet = 'serious';
+        }
+        else if (input.match(/riesgo país|riesgo pais|bonos|deuda/)) {
+            response = this.knowledge.financial_deep.riesgo_pais;
+            poseToSet = 'serious';
+        }
 
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('serious');
+        // --- 5. FINANZAS: TIEMPO REAL (DÓLAR / MERVAL) ---
+        else if (input.match(/finanzas|mercado|bolsa|dólar|dolar|merval|byma|cotización|cotizacion/)) {
+            const update = this.getFinancialUpdate();
+            response = update.text;
+            chartData = update.chart;
+            poseToSet = 'hypnotic';
         }
-        else if (input.match(/clima|tiempo|temperatura|llueve|lluvia/)) {
-            if (input.includes('rosario')) {
-                response = "Para mañana en Rosario, Santa Fe, se espera un día agradable con una máxima de 28°C y mínima de 18°C. El cielo estará mayormente despejado, ideal para actividades al aire libre. ¡Un clima típico de marzo en la Chicago Argentina!";
-            } else {
-                response = "No tengo tu ubicación exacta activada, pero puedo decirte que hoy es un buen día para estar informado. Si quieres saber el clima de Rosario, solo dímelo.";
-            }
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('presenter');
-        }
-        else if (input.match(/bitcoin|btc/)) response = this.knowledge.tech_info.bitcoin;
-        else if (input.match(/ethereum|eth/)) response = this.knowledge.tech_info.ethereum;
-        else if (input.match(/javascript|js/)) response = this.knowledge.tech_info.javascript;
-        else if (input.match(/quién eres|tu nombre|quien eres|cómo te llamas/)) response = this.pick(this.knowledge.identity);
-        else if (input.match(/qué puedes|qué haces|qué sabes|capacidades|ayúdame/)) response = this.pick(this.knowledge.capabilities);
-        else if (input.match(/chiste|broma|humor|gracioso|reír/)) {
-            response = this.pick(this.knowledge.jokes);
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('happy');
-        }
-        else if (input.match(/ia|inteligencia artificial|llm|gpt/)) response = this.pick(this.knowledge.ai_info);
-        else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) response = this.pick(this.knowledge.farewells);
-        else if (input.match(/gracias|thanks|agradezco/)) response = this.pick(this.knowledge.thanks);
+
+        // --- 6. PRODUCTIVIDAD Y AGENDA ---
         else if (input.match(/agenda|qué tengo|que tengo|tareas|mis tareas/)) {
-            const tasks = this.core.agenda;
+            const tasks = this.core.agenda || [];
             if (tasks.length === 0) {
                 response = "Tu agenda está vacía por ahora. ¿Quieres que anote algo?";
             } else {
-                response = `Tienes ${tasks.length} tareas en tu agenda: ` + tasks.map((t, i) => `${i + 1}. ${t.text}`).join(', ');
+                response = `Tienes ${tasks.length} tareas pendientes. Serían: ` + tasks.map((t, i) => `${i + 1}. ${t.text}`).join('; ');
             }
+            poseToSet = 'presenter';
         }
         else if (input.match(/anota|recordar|recuerda|recuérdame|tarea|agregar tarea/)) {
             const taskText = userInput.replace(/anota|recordar|recuerda|recuérdame|tarea|puedes|agregar|por favor/gi, '').trim();
             if (taskText && taskText.length > 2) {
                 this.core.addTask(taskText);
-                response = `Perfecto, he anotado "${taskText}" en tu agenda.`;
-                if (this.core.anaCharacter) this.core.anaCharacter.setPose('happy');
+                response = `Perfecto, he anotado "${taskText}" en tu lista de tareas pendientes.`;
+                poseToSet = 'happy';
             } else {
-                response = "¿Qué te gustaría que anotara en tu agenda?";
+                response = "No escuché bien la tarea, ¿qué te gustaría que anotara?";
+                poseToSet = 'thinking';
             }
         }
         else if (input.match(/qué día es hoy|que dia es hoy|qué fecha es|que fecha es|qué día estamos/)) {
             const now = new Date();
             const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            response = `Hoy es ${now.toLocaleDateString('es-ES', options)}.`;
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('presenter');
+            response = `Hoy es ${now.toLocaleDateString('es-ES', options)}. Un día excelente.`;
+            poseToSet = 'presenter';
         }
         else if (input.match(/qué hora es|la hora|dime la hora/)) {
             const now = new Date();
-            response = `Son las ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}.`;
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('presenter');
-        }
-        else if (input.match(/finanzas|mercado|bolsa|dólar|dolar|merval|byma|riesgo país|acciones|bonos|noticias/)) {
-            const update = this.getFinancialUpdate();
-            response = update.text;
-            chartData = update.chart;
-            if (this.core && this.core.anaCharacter) this.core.anaCharacter.setPose('hypnotic');
-        }
-        else {
-            response = this.pick(this.knowledge.default);
+            response = `Son las ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} exactos.`;
+            poseToSet = 'presenter';
         }
 
-        // Simulate thinking delay
+        // --- 7. FALLBACK PREDICTIVO (Por si no entiende) ---
+        else {
+            if (input.match(/por qué|cómo|cuando/)) {
+                response = "Esa es una pregunta interesante. En mi base de datos actual no tengo esa información cruzada, pero me lo apunto para estudiarlo.";
+                poseToSet = 'thinking';
+            } else {
+                response = this.pick(this.knowledge.default);
+                poseToSet = 'idle';
+            }
+        }
+
+        // Simulate thinking delay & Apply
         if (this.core) {
-            if (this.core.anaCharacter) this.core.anaCharacter.setPose('thinking');
+            if (this.core.anaCharacter) this.core.anaCharacter.setPose('thinking'); // Pose inicial de procesar info
             this.core.showTypingIndicator();
+
             setTimeout(() => {
                 this.core.hideTypingIndicator();
+                // Setear la pose final que dedujo del árbol de decisiones
+                if (this.core.anaCharacter) this.core.anaCharacter.setPose(poseToSet);
+
                 this.core.speak(response);
                 this.core.addMessage(response, 'ana', chartData);
 
                 // Show 3 follow-up suggestions
                 const suggestions = this.core.getSuggestionsFor(input, response);
                 this.core.showSuggestions(suggestions.slice(0, 3));
-            }, 1000 + Math.random() * 1000);
+            }, 800 + Math.random() * 800);
         }
     }
 
