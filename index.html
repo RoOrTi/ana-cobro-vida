@@ -72,7 +72,13 @@
         <!-- RIGHT: CHAT PANEL -->
         <div class="chat-panel">
             <div class="chat-header">
-                <div class="chat-title">Sesión de Análisis con <span>Ana</span></div>
+                <div class="chat-version-selector">
+                    <a href="./index.html?v=web" class="version-icon active" title="Versión Web">🌐</a>
+                    <a href="./index.html?v=ios" class="version-icon" title="Versión iOS (Apple)">🍎</a>
+                    <a href="./index.html?v=android" class="version-icon" title="Versión Android">🤖</a>
+                    <div class="version-separator"></div>
+                    <div class="chat-title"><span>Ana</span> Intelligence</div>
+                </div>
                 <div class="chat-meta">Market Intelligence v2.0</div>
                 <div id="marketTicker" class="market-ticker">
                     <!-- Mercado en vivo aparecerá aquí -->
@@ -112,6 +118,15 @@
         window.addEventListener('load', () => {
             const intro = document.getElementById('intro');
             const loader = document.getElementById('introLoader');
+            // Resaltar versión activa según URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const version = urlParams.get('v');
+            if (version) {
+                document.querySelectorAll('.version-icon').forEach(el => el.classList.remove('active'));
+                const activeIcon = document.querySelector(`.version-icon[href*="v=${version}"]`);
+                if (activeIcon) activeIcon.classList.add('active');
+            }
+
             const startBtn = document.getElementById('startBtn');
 
             // Simular carga
