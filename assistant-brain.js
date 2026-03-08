@@ -370,7 +370,7 @@ class AssistantBrain {
         else if (input.match(/temporizador|timer|recordatorio|avisa|av[ií]same|cuenta regresiva/) ||
             (input.match(/pon|programa|ejecuta|activa|crea|configura|pone|poneme|ponme|agend[aá]|set|inicia|arranca/) && input.match(/minuto|hora|segundo|\d+|uno|dos|tres|cuatro|cinco|diez|quince|veinte|treinta|media/))) {
 
-            // Diccionario completo: palabras → números
+            // Diccionario completo: palabras → números (hasta 500)
             const wordToNum = {
                 'un': 1, 'uno': 1, 'una': 1,
                 'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
@@ -379,8 +379,14 @@ class AssistantBrain {
                 'dieciséis': 16, 'diecisiete': 17, 'dieciocho': 18, 'diecinueve': 19,
                 'veinte': 20, 'veintiuno': 21, 'veintidós': 22, 'veintitrés': 23,
                 'veinticuatro': 24, 'veinticinco': 25,
-                'treinta': 30, 'cuarenta': 40, 'cuarenta y cinco': 45, 'cincuenta': 50,
-                'sesenta': 60, 'media hora': 30
+                'treinta': 30, 'cuarenta': 40, 'cuarenta y cinco': 45,
+                'cincuenta': 50, 'sesenta': 60, 'setenta': 70, 'ochenta': 80,
+                'noventa': 90, 'cien': 100, 'ciento': 100,
+                'ciento cincuenta': 150, 'doscientos': 200, 'trescientos': 300,
+                'cuatrocientos': 400, 'quinientos': 500,
+                'media hora': 30, 'una hora': 60, 'hora y media': 90,
+                'dos horas': 120, 'tres horas': 180, 'cuatro horas': 240,
+                'ocho horas': 480
             };
 
             let cleanInput = input;
@@ -392,14 +398,33 @@ class AssistantBrain {
 
             if (minMatch) {
                 const mins = parseInt(minMatch[1]);
-                if (mins > 0 && mins <= 120) {
+                const MAX_TIMER = 500; // máximo permitido en minutos
+
+                if (mins <= 0) {
+                    response = `Mmm... ${mins} minutos no tiene sentido. Indicame un tiempo entre 1 y ${MAX_TIMER} minutos.`;
+                    poseToSet = 'thinking';
+                } else if (mins > MAX_TIMER) {
+                    // Error inteligente: detecta valor absurdo e informa el límite
+                    const horas = Math.floor(mins / 60);
+                    const extra = mins % 60;
+                    const tiempoHumano = horas > 0
+                        ? `${horas} hora${horas > 1 ? 's' : ''}${extra > 0 ? ` y ${extra} min` : ''}`
+                        : `${mins} minutos`;
+                    response = `${tiempoHumano} es demasiado. El máximo es ${MAX_TIMER} minutos (${Math.floor(MAX_TIMER / 60)}h ${MAX_TIMER % 60}min). ¿Cuánto tiempo querés realmente?`;
+                    poseToSet = 'thinking';
+                    pendingSuggestions = [
+                        'Temporizador de 30 minutos',
+                        'Temporizador de 60 minutos',
+                        'Temporizador de 120 minutos'
+                    ];
+                } else {
                     this.core.startTimer(mins);
                     const label = mins === 1 ? '1 minuto' : `${mins} minutos`;
-                    response = `Perfecto. Temporizador de ${label} activado. Te aviso cuando llegue la hora. 🕐`;
+                    const hLabel = mins >= 60
+                        ? ` (${Math.floor(mins / 60)}h${mins % 60 > 0 ? ' ' + mins % 60 + 'min' : ''})`
+                        : '';
+                    response = `Perfecto. Temporizador de ${label}${hLabel} activado. Te aviso cuando llegue la hora. 🕐`;
                     poseToSet = 'happy';
-                } else {
-                    response = `El tiempo indicado (${mins} min) está fuera del rango. ¿Cuántos minutos querés?`;
-                    poseToSet = 'thinking';
                 }
             } else {
                 // No se entendió la duración → mostrar opciones de accesibilidad
