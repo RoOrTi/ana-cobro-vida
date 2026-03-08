@@ -73,8 +73,8 @@ const ANA_SVG_TEMPLATE = `
     transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Ajustes específicos para LABIOS durante el habla: Anclaje ultra-estable */
-#anaTalkOpen, #anaTalkHalf, #anaTalkClosed {
+/* Ajustes específicos para LABIOS y SONRISA: Anclaje ultra-estable */
+#anaTalkOpen, #anaSmile {
   transform: 
     scale(var(--ana-mouth-s, 1)) 
     translate(0px, calc(10px + var(--ana-mouth-y, 0px))) !important;
@@ -126,10 +126,9 @@ const ANA_SVG_TEMPLATE = `
         <!-- DIAPOSITIVAS -->
         <img id="anaHoloImg" class="ana-holo-img active" src="./Parpadeo.gif" alt="Ana Idle" />
         <img id="anaStaticImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Action" />
-        <!-- LABIOS PARA HABLA (Frame Based) -->
+        <!-- LABIOS PARA HABLA Y SONRISA (Reducido a 2 capas) -->
         <img id="anaTalkOpen" class="ana-holo-img" src="./labioabierto.png" alt="Ana Talk Open" />
-        <img id="anaTalkHalf" class="ana-holo-img" src="./labiosemiabierto.png" alt="Ana Talk Half" />
-        <img id="anaTalkClosed" class="ana-holo-img" src="./labiocerrado.png" alt="Ana Talk Closed" />
+        <img id="anaSmile" class="ana-holo-img" src="./risa.png" alt="Ana Smile" />
       </div>
     </div>
   </div>
@@ -155,11 +154,10 @@ class AnaCharacter {
 
     this.avatarWrap = document.getElementById('anaAvatarWrap');
     this.slides = [
-      document.getElementById('anaHoloImg'),
-      document.getElementById('anaStaticImg'),
-      document.getElementById('anaTalkOpen'),
-      document.getElementById('anaTalkHalf'),
-      document.getElementById('anaTalkClosed')
+      document.getElementById('anaHoloImg'),    // 0: Parpadeo GIF (Idle)
+      document.getElementById('anaStaticImg'),  // 1: Base estática (Boca Cerrada)
+      document.getElementById('anaTalkOpen'),   // 2: Boca Abierta (Hablando)
+      document.getElementById('anaSmile')       // 3: Sonrisa (Pose Feliz)
     ];
 
     this.updateSlides();
@@ -237,50 +235,51 @@ class AnaCharacter {
     let gy = 0;
     let scale = 1;
 
-    // BOCA: apertura (scale) y curvatura (Y) SUPER EXAGERADOS (*20)
+    // BOCA: ahora solo usamos apertura (la curva ya viene dibujada en la imagen risa.png)
     if (p.boca) {
       if (p.boca.apertura) {
         root.style.setProperty('--ana-mouth-s', p.boca.apertura.escala);
       }
       if (p.boca.curvatura) {
-        const curva = p.boca.curvatura.escala * 20; // 💥 Sobreactuado (antes 8)
+        // Reducido a algo normal ya que la sonrisa real está en la imagen 
+        const curva = p.boca.curvatura.escala * 2;
         root.style.setProperty('--ana-mouth-y', `${-curva}px`);
       }
     }
 
-    // MEJILLAS: coordinadas con la sonrisa EXAGERADAS (*15)
+    // MEJILLAS: volvemos a valores sutiles normales
     if (p.mejillas && p.mejillas.elevacion) {
-      gy -= p.mejillas.elevacion.escala * 15; // 💥 Sobreactuado (antes 6)
+      gy -= p.mejillas.elevacion.escala * 6;
     }
 
-    // OJOS: cierre parcial / achine EXAGERADO (*0.15 y *8)
+    // OJOS: volvemos a escala normal
     if (p.ojos) {
       const cierre = p.ojos.cierre_parcial || p.ojos.cierre;
       if (cierre) {
-        scale += (cierre.escala * 0.15); // 💥 Mucho más zoom aparente
-        gy -= cierre.escala * 8; // 💥 Compensa subiendo más (antes 3)
+        scale += (cierre.escala * 0.04);
+        gy -= cierre.escala * 3;
       }
     }
 
     // CEJAS: ascenso o descenso
     if (p.cejas) {
       if (p.cejas.ascenso) {
-        gy -= p.cejas.ascenso.escala * 12; // 💥 Sobreactuado
+        gy -= p.cejas.ascenso.escala * 5;
       }
       if (p.cejas.ligera_descenso || p.cejas.descenso) {
-        const desc = (p.cejas.ligera_descenso || p.cejas.descenso).escala * 8; // 💥 Sobreactuado
+        const desc = (p.cejas.ligera_descenso || p.cejas.descenso).escala * 3;
         gy += desc;
       }
     }
 
     // FRENTE: arrugas (leve compresión)
     if (p.frente && p.frente.arrugas) {
-      scale -= p.frente.arrugas.escala * 0.05; // 💥 Sobreactuado
+      scale -= p.frente.arrugas.escala * 0.02;
     }
 
     // INCLINACIÓN (Nuevo para gestos de ternura/alegría)
     if (p.inclinacion) {
-      root.style.setProperty('--ana-g-rot', `${p.inclinacion.escala * 6}deg`); // Inclinar hasta 6 grados
+      root.style.setProperty('--ana-g-rot', `${p.inclinacion.escala * 3}deg`);
     } else {
       root.style.setProperty('--ana-g-rot', '0deg');
     }
@@ -359,7 +358,9 @@ class AnaCharacter {
 
     if (poseName !== 'idle') {
       this.isPaused = true;
-      this.currentSlide = 1;
+      // Si la pose es feliz y no está hablando, mostramos la imagen de la sonrisa (Slide 3)
+      // Para otras poses de acción mostramos la base estática (Slide 1)
+      this.currentSlide = (poseName === 'happy') ? 3 : 1;
     } else {
       this.isPaused = false;
       this.currentSlide = 0;
@@ -370,20 +371,19 @@ class AnaCharacter {
   setMouthShape(char) {
     if (!this.isSpeaking) return;
     const c = char.toLowerCase();
-    // Mapeo pro: Vocales abiertas -> Open, Vocales cerradas -> Half, Otros -> Closed
-    if (/[aeoáéó]/.test(c)) {
+
+    // Ahora solo alternamos entre Abierta (2) y Cerrada (1, base)
+    if (/[aeiouáéíóú]/.test(c)) {
       this.targetMouthFrame = 2; // Open
-    } else if (/[iuíú]/.test(c)) {
-      this.targetMouthFrame = 3; // Half
     } else {
-      this.targetMouthFrame = 4; // Closed
+      this.targetMouthFrame = 1; // Closed (base estática)
     }
   }
 
   startSpeaking() {
     this.isSpeaking = true;
     this.isPaused = true;
-    this.targetMouthFrame = 4; // Empezamos cerrada
+    this.targetMouthFrame = 1; // Empezamos cerrada
 
     if (this.avatarWrap) this.avatarWrap.classList.add('ana-speaking');
   }
@@ -391,7 +391,7 @@ class AnaCharacter {
   stopSpeaking() {
     this.isSpeaking = false;
     this.isPaused = false;
-    this.targetMouthFrame = 4;
+    this.targetMouthFrame = 1;
 
     // Limpiar clases visuales al callar
     if (this.avatarWrap) {

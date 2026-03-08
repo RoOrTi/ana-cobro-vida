@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ana-cache-v6'; // Bumped for images support
+const CACHE_NAME = 'ana-cache-v7'; // Bumped for new smile image
 const urlsToCache = [
     './',
     './index.html',
@@ -10,8 +10,7 @@ const urlsToCache = [
     './Parpadeo.gif',
     './ana-holographic.png',
     './labioabierto.png',
-    './labiosemiabierto.png',
-    './labiocerrado.png'
+    './risa.png'
 ];
 
 self.addEventListener('install', event => {
