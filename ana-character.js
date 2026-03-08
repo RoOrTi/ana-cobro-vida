@@ -43,7 +43,11 @@ const ANA_SVG_TEMPLATE = `
   /* <--- COORDENADAS MAGNÉTICAS ---> */
   transform-origin: 50% 50%;
   /* Aplicamos los valores exactos definidos por testeo manual */
-  transform: scale(1) translate(0px, 10px) translateY(var(--ana-anim-y, 0px));
+  /* Usamos variables CSS para que los gestos no rompan la alineación base */
+  transform: 
+    scale(var(--ana-g-scale, 1)) 
+    translate(var(--ana-g-x, 0px), calc(10px + var(--ana-g-y, 0px))) 
+    translateY(var(--ana-anim-y, 0px));
   
   /* Eliminamos saturate y brightness que causan "ruido" o distorsión en la piel */
   filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.25));
@@ -60,8 +64,12 @@ const ANA_SVG_TEMPLATE = `
   transition: opacity 0.5s ease-in-out;
 }
 
-/* Desactivar transiciones suaves para los labios de habla para evitar efecto 'transparente' */
+/* Ajustes específicos para LABIOS durante el habla: Anclaje ultra-estable */
 #anaTalkOpen, #anaTalkHalf, #anaTalkClosed {
+  transform: 
+    scale(var(--ana-mouth-s, 1)) 
+    translate(0px, calc(10px + var(--ana-mouth-y, 0px))) 
+    translateY(var(--ana-anim-y, 0px)) !important;
   transition: none !important;
 }
 
@@ -85,17 +93,21 @@ const ANA_SVG_TEMPLATE = `
   opacity: 1;
 }
 
-/* --- GESTO: RISA (Ajuste Seguro) --- */
-#anaAvatarWrap.pose-happy .ana-holo-img {
-  /* Mantenemos el offset original (0, 10px) y agregamos sutil escala */
-  transform: scale(1.02) translate(0, 10px) translateY(var(--ana-anim-y, 0px));
-  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.3));
+/* --- LAS POSES AHORA SOLO CAMBIAN VARIABLES PARA EVITAR JITTER --- */
+#anaAvatarWrap.pose-happy {
+  --ana-g-scale: 1.02;
+  --ana-mouth-s: 0.95;
+  --ana-mouth-y: 2px;
 }
 
-#anaAvatarWrap.pose-happy #anaTalkOpen, 
-#anaAvatarWrap.pose-happy #anaTalkHalf {
-  /* Curvatura de boca amigable mediante escala vertical */
-  transform: scale(1, 0.9) translate(0, 12px);
+#anaAvatarWrap.pose-serious {
+  --ana-g-y: -2px;
+  --ana-g-scale: 0.98;
+}
+
+#anaAvatarWrap.pose-thinking {
+  --ana-g-scale: 1.01;
+  --ana-g-x: -5px;
 }
 </style>
 
@@ -205,6 +217,45 @@ class AnaCharacter {
     // This method is no longer used as blinking is handled by the slideshow
   }
 
+  /**
+   * Aplica un gesto basado en el formato JSON proporcionado
+   */
+  applyGesture(data) {
+    if (!this.avatarWrap || !data.parametros) return;
+
+    const p = data.parametros;
+    const root = this.avatarWrap;
+
+    // Mapeo selectivo de parámetros a variables CSS
+    if (p.boca) {
+      if (p.boca.apertura) root.style.setProperty('--ana-mouth-s', p.boca.apertura.escala);
+      if (p.boca.curvatura) root.style.setProperty('--ana-mouth-y', `${p.boca.curvatura.escala * 10}px`);
+    }
+
+    if (p.mejillas && p.mejillas.elevacion) {
+      root.style.setProperty('--ana-g-y', `-${p.mejillas.elevacion.escala * 5}px`);
+    }
+
+    if (p.ojos && p.ojos.cierre_parcial) {
+      // Simular entrecerrar ojos mediante escala leve
+      root.style.setProperty('--ana-g-scale', 1 + (p.ojos.cierre_parcial.escala * 0.05));
+    }
+
+    console.log(`[Ana] Gesto aplicado: ${data.gesto}`);
+
+    // Si tiene duración, resetear después
+    if (data.duracion) {
+      const ms = parseFloat(data.duracion) * 1000;
+      setTimeout(() => this.resetGestures(), ms);
+    }
+  }
+
+  resetGestures() {
+    if (!this.avatarWrap) return;
+    const vars = ['--ana-g-scale', '--ana-g-x', '--ana-g-y', '--ana-mouth-s', '--ana-mouth-y'];
+    vars.forEach(v => this.avatarWrap.style.removeProperty(v));
+  }
+
   setPose(poseName) {
     this.currentPose = poseName;
     console.log(`[Ana] Cambiando pose a: ${poseName}`);
@@ -213,17 +264,18 @@ class AnaCharacter {
     const poseClasses = ['pose-happy', 'pose-thinking', 'pose-serious'];
     if (this.avatarWrap) {
       this.avatarWrap.classList.remove(...poseClasses);
+      this.resetGestures(); // Limpiar gestos dinámicos al cambiar de pose
       if (poseName !== 'idle') this.avatarWrap.classList.add(`pose-${poseName}`);
     }
 
     if (poseName === 'happy') {
-      this.poseGlow = "rgba(255, 215, 0, 0.6)"; // Oro
+      this.poseGlow = "rgba(255, 215, 0, 0.6)";
       this.poseSpeed = 0.04;
     } else if (poseName === 'thinking') {
-      this.poseGlow = "rgba(0, 255, 255, 0.4)"; // Cyan concentrado
+      this.poseGlow = "rgba(0, 255, 255, 0.4)";
       this.poseSpeed = 0.01;
     } else if (poseName === 'serious') {
-      this.poseGlow = "rgba(255, 60, 0, 0.6)"; // Alerta
+      this.poseGlow = "rgba(255, 60, 0, 0.6)";
       this.poseSpeed = 0.05;
     }
 
