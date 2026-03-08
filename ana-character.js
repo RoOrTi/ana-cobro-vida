@@ -84,6 +84,19 @@ const ANA_SVG_TEMPLATE = `
 .ana-holo-img.active {
   opacity: 1;
 }
+
+/* --- GESTO: RISA (Basado en parámetros JSON) --- */
+.app-layout:has(.ana-speaking) #anaAvatarWrap.pose-happy .ana-holo-img {
+  /* Elevación de mejillas y curvatura (Esclala 0.9 / 0.7) */
+  transform: scale(1.02) translateY(var(--ana-anim-y, 0px)) perspective(1000px) rotateX(2deg);
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)) brightness(1.05);
+}
+
+.pose-happy #anaTalkOpen, .pose-happy #anaTalkHalf {
+  /* Curvatura de boca hacia arriba (Mueca amigable) */
+  clip-path: ellipse(100% 85% at 50% 40%); 
+  transform: scale(0.95, 0.9) translateY(5px);
+}
 </style>
 
 <div class="avatar-wrap full-body-mode" id="anaAvatarWrap">
@@ -196,9 +209,12 @@ class AnaCharacter {
     this.currentPose = poseName;
     console.log(`[Ana] Cambiando pose a: ${poseName}`);
 
-    // Configuración de efectos según pose
-    this.poseGlow = "rgba(0, 200, 255, 0.5)";
-    this.poseSpeed = 0.02;
+    // Limpiar clases de pose anteriores
+    const poseClasses = ['pose-happy', 'pose-thinking', 'pose-serious'];
+    if (this.avatarWrap) {
+      this.avatarWrap.classList.remove(...poseClasses);
+      if (poseName !== 'idle') this.avatarWrap.classList.add(`pose-${poseName}`);
+    }
 
     if (poseName === 'happy') {
       this.poseGlow = "rgba(255, 215, 0, 0.6)"; // Oro
