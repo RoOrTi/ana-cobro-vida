@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ana-cache-v5'; // Bumped: force Chrome to discard old corrupt cache
+const CACHE_NAME = 'ana-cache-v6'; // Bumped for images support
 const urlsToCache = [
     './',
     './index.html',
@@ -6,7 +6,12 @@ const urlsToCache = [
     './ana-character.js',
     './assistant-core.js',
     './assistant-brain.js',
-    './manifest.json'
+    './manifest.json',
+    './Parpadeo.gif',
+    './ana-holographic.png',
+    './labioabierto.png',
+    './labiosemiabierto.png',
+    './labiocerrado.png'
 ];
 
 self.addEventListener('install', event => {
