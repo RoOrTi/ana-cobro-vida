@@ -88,6 +88,10 @@ const ANA_SVG_TEMPLATE = `
         <!-- DIAPOSITIVAS -->
         <img id="anaHoloImg" class="ana-holo-img active" src="./Parpadeo.gif" alt="Ana Idle" />
         <img id="anaStaticImg" class="ana-holo-img" src="./ana-holographic.png" alt="Ana Action" />
+        <!-- LABIOS PARA HABLA (Frame Based) -->
+        <img id="anaTalkOpen" class="ana-holo-img" src="./labioabierto.png" alt="Ana Talk Open" />
+        <img id="anaTalkHalf" class="ana-holo-img" src="./labiosemiabierto.png" alt="Ana Talk Half" />
+        <img id="anaTalkClosed" class="ana-holo-img" src="./labiocerrado.png" alt="Ana Talk Closed" />
       </div>
     </div>
   </div>
@@ -114,7 +118,10 @@ class AnaCharacter {
     this.avatarWrap = document.getElementById('anaAvatarWrap');
     this.slides = [
       document.getElementById('anaHoloImg'),
-      document.getElementById('anaStaticImg')
+      document.getElementById('anaStaticImg'),
+      document.getElementById('anaTalkOpen'),
+      document.getElementById('anaTalkHalf'),
+      document.getElementById('anaTalkClosed')
     ];
 
     this.updateSlides();
@@ -140,22 +147,22 @@ class AnaCharacter {
     let t = 0;
     let p = 0;
 
-    // Bucle principal de animación (60fps aprox)
     this.lifeCycleInterval = setInterval(() => {
-      t += 0.04; // Respiración más pausada y natural
+      t += 0.04;
       p += 0.45;
 
-      const breathY = Math.sin(t) * 2; // Menos recorrido para evitar mareo
-      let speakY = 0;
+      const totalY = Math.sin(t) * 2;
 
-      // Si está hablando, calculamos la intensidad del lip-sync
+      // Si está hablando, controlamos el frame del lip-sync (procedimiento de 3 imágenes)
       if (this.isSpeaking) {
-        speakY = Math.abs(Math.sin(p)) * -3;
+        // Ciclo rápido de frames: 2 (Open), 3 (Half), 4 (Closed)
+        // Usamos p para determinar el frame basado en el tiempo
+        const frameCycle = Math.floor(p * 2) % 3; // 0, 1, 2
+        this.currentSlide = 2 + frameCycle; // Mapea a anaTalkOpen, Half, Closed
+        this.updateSlides();
       }
 
-      const totalY = breathY + speakY;
-
-      // Aplicar movimiento a través de variable CSS para no romper el transform base
+      // Aplicar movimiento de respiración
       if (this.avatarWrap) {
         this.avatarWrap.style.setProperty('--ana-anim-y', `${totalY}px`);
 
@@ -193,11 +200,7 @@ class AnaCharacter {
 
   startSpeaking() {
     this.isSpeaking = true;
-    this.isPaused = true; // Empieza acción
-
-    // Forzamos la imagen estática mientras habla
-    this.currentSlide = 1;
-    this.updateSlides();
+    this.isPaused = true;
 
     if (this.avatarWrap) this.avatarWrap.classList.add('ana-speaking');
   }
