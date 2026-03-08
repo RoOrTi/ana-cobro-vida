@@ -12,6 +12,13 @@ class AssistantBrain {
         // Control de saludo de sesión única
         this.sessionGreeted = sessionStorage.getItem('ana_greeted') === 'true';
 
+        // Contexto: El "Aquí y Ahora"
+        this.context = {
+            city: "Rosario",
+            province: "Santa Fe",
+            country: "Argentina"
+        };
+
         this.knowledge = {
             greeting: [
                 "¡Hola! Soy Ana, tu asistente virtual inteligente. Estoy aquí para ayudarte con lo que necesites. ¿En qué puedo asistirte hoy?",
@@ -189,12 +196,15 @@ class AssistantBrain {
         let chartData = null;
         let poseToSet = 'idle';
 
-        // --- 1. SALUDOS Y CORTESÍA (Sesión Única) ---
+        // --- 1. SALUDOS Y CORTESÍA (Sesión Única con contexto) ---
         if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) {
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
             if (this.sessionGreeted) {
-                response = "¡Hola de nuevo! ¿En qué seguimos trabajando?";
+                response = `¡Hola de nuevo! Son las ${timeStr} en ${this.context.city}, estoy lista para lo que necesites.`;
             } else {
-                response = this.pick(this.knowledge.greeting);
+                response = `¡Hola! Soy Ana. Son las ${timeStr} aquí en ${this.context.city}, Santa Fe. Un placer saludarte, ¿cómo arrancamos?`;
                 this.sessionGreeted = true;
                 sessionStorage.setItem('ana_greeted', 'true');
             }
@@ -321,6 +331,11 @@ class AssistantBrain {
         else if (input.match(/qué hora es|la hora|dime la hora/)) {
             const now = new Date();
             response = `Son las ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} exactos.`;
+            poseToSet = 'presenter';
+        }
+
+        else if (input.match(/dónde estás|donde estas|dónde estás ubicada|tu ubicación/)) {
+            response = `Estoy operando desde ${this.context.city}, ${this.context.province}, en el corazón de Argentina. ¡Cerca del Paraná!`;
             poseToSet = 'presenter';
         }
 
