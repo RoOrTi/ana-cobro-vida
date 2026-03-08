@@ -429,12 +429,39 @@ class AssistantCore {
         if (!minutes || minutes <= 0) return;
         const endTime = Date.now() + (minutes * 60 * 1000);
         localStorage.setItem('ana-alarm', JSON.stringify({ endTime, minutes }));
-
         console.log(`[AssistantCore] Alarma programada: ${minutes} minutos.`);
+
+        // Solicitar Wake Lock para que la pantalla no se duerma durante la cuenta
+        this.requestWakeLock();
 
         // Mostrar contador regresivo visible
         this.showCountdown(endTime);
         this.setupAlarmCheck(minutes * 60 * 1000);
+    }
+
+    async requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                this.wakeLock = await navigator.wakeLock.request('screen');
+                console.log('[Ana] Wake Lock activo: pantalla no se apagará.');
+                // Re-activar si el usuario vuelve a la pestaña
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible' && localStorage.getItem('ana-alarm')) {
+                        this.requestWakeLock();
+                    }
+                }, { once: true });
+            }
+        } catch (e) {
+            console.warn('[Ana] Wake Lock no disponible:', e.message);
+        }
+    }
+
+    releaseWakeLock() {
+        if (this.wakeLock) {
+            this.wakeLock.release();
+            this.wakeLock = null;
+            console.log('[Ana] Wake Lock liberado.');
+        }
     }
 
     showCountdown(endTime) {
@@ -495,6 +522,7 @@ class AssistantCore {
         }
         const el = document.getElementById('anaCountdown');
         if (el) el.remove();
+        this.releaseWakeLock();
     }
 
     setupAlarmCheck(delay) {
@@ -524,70 +552,140 @@ class AssistantCore {
 
         // Limpiar el contador al disparar la alarma
         this.clearCountdown();
-
         localStorage.removeItem('ana-alarm');
+
+        // 1. Sonido de anuncio
         this.playAlarmSound();
+        // 2. Notte Magica automático (con pequeño retardo para no solapar)
+        setTimeout(() => this.playNotteMagica(), 1200);
+        // 3. Efecto visual de discoteca
+        this.launchDiscoEffect();
 
-        const msg = `¡Atención! Se ha cumplido el tiempo de tu alarma de ${mins} minutos.`;
+        const msg = `¡Es hora de volver! Pasaron tus ${mins} minutos de descanso. ¡A trabajar!`;
         this.addMessage(msg, 'ana');
-        this.speak(msg);
+        setTimeout(() => this.speak(msg), 14500); // Habla después de la melodía
 
-        if (this.anaCharacter) {
-            this.anaCharacter.setPose('happy');
+        if (this.anaCharacter) this.anaCharacter.setPose('happy');
+    }
 
-            // --- ALERTA VISUAL PREMIUM + NOTTE MAGICA ---
-            const overlay = document.createElement('div');
-            overlay.className = 'ana-alert-overlay';
-            overlay.innerHTML = `
-                <div class="alert-content">
-                    <img src="./ana-alert.png" class="alert-img" onerror="this.style.display='none'">
-                    <div class="alert-text">⏱ TIEMPO CUMPLIDO</div>
-                    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px;">
-                        <button class="alert-close">¡VAMOS!</button>
-                        <button class="notte-btn" onclick="window.assistant && window.assistant.playNotteMagica()">
-                            🎵 Notte Magica
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(overlay);
+    launchDiscoEffect() {
+        // Crear el canvas de discoteca
+        const canvas = document.createElement('canvas');
+        canvas.id = 'discoCanvas';
+        canvas.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999; pointer-events: none;
+        `;
+        document.body.appendChild(canvas);
 
-            const style = document.createElement('style');
-            style.innerHTML = `
-                .ana-alert-overlay {
-                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                    background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
-                    display: flex; align-items: center; justify-content: center;
-                    z-index: 10000; animation: anaFadeIn 0.5s ease;
+        // Overlay de texto encima del canvas
+        const msg = document.createElement('div');
+        msg.id = 'discoMsg';
+        msg.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; pointer-events: auto;
+        `;
+        msg.innerHTML = `
+            <div style="font-size: clamp(2rem,6vw,4rem); font-weight:900; letter-spacing:6px;
+                        color: #fff; text-shadow: 0 0 30px #ffd700, 0 0 60px #ff6b6b;
+                        animation: discoText 0.8s ease-in-out infinite alternate;
+                        text-align:center; padding: 20px;">
+                ⏰ ¡TIEMPO DE VOLVER!
+            </div>
+            <div style="font-size:1.2rem; color:rgba(255,255,255,0.8); letter-spacing:3px; margin-top:10px;">
+                🎵 Notte Magica • Italia 90
+            </div>
+            <button onclick="document.getElementById('discoCanvas')?.remove(); document.getElementById('discoMsg')?.remove();"
+                style="margin-top: 40px; background: linear-gradient(135deg,#ffd700,#ff6b6b);
+                       border:none; padding:14px 44px; border-radius:50px; font-size:1.1rem;
+                       font-weight:900; cursor:pointer; color:#000; letter-spacing:2px;
+                       box-shadow: 0 0 30px rgba(255,215,0,0.6); transition:0.3s;">
+                💪 ¡A TRABAJAR!
+            </button>
+        `;
+        document.body.appendChild(msg);
+
+        // Inyectar keyframe
+        if (!document.getElementById('disco-style')) {
+            const st = document.createElement('style');
+            st.id = 'disco-style';
+            st.innerHTML = `
+                @keyframes discoText {
+                    from { text-shadow: 0 0 20px #ffd700, 0 0 50px #ff6b6b; color: #fff; }
+                    to   { text-shadow: 0 0 40px #00d4ff, 0 0 80px #c9a96e; color: #ffd700; }
                 }
-                .alert-content {
-                    text-align: center; color: white; transform: scale(0.9);
-                    animation: anaPopIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-                    display: flex; flex-direction: column; align-items: center; gap: 15px;
-                }
-                .alert-img { width: 260px; height: 260px; border-radius: 25px; box-shadow: 0 0 40px #00d2ff; object-fit: cover; border: 2px solid rgba(0,210,255,0.5); }
-                .alert-text { font-size: 2rem; font-weight: 900; letter-spacing: 4px; text-shadow: 0 0 15px #00d2ff; }
-                .alert-close { background: linear-gradient(135deg, #00d2ff, #0072ff); border: none; padding: 12px 32px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; font-size: 1rem; }
-                .alert-close:hover { transform: scale(1.1); box-shadow: 0 0 25px #00d2ff; }
-                .notte-btn { background: linear-gradient(135deg, #c9a96e, #ffd700); border: none; padding: 12px 24px; border-radius: 50px; font-weight: bold; cursor: pointer; color: #000; font-size: 1rem; transition: 0.3s; }
-                .notte-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(201,169,110,0.6); }
-                .notte-player { margin-top: 5px; }
-                @keyframes anaFadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes anaPopIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
             `;
-            document.head.appendChild(style);
-
-            overlay.querySelector('.alert-close').onclick = () => {
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.remove(), 500);
-            };
-
-            const holo = document.getElementById('anaAvatarWrap');
-            if (holo) {
-                holo.classList.add('ana-speaking');
-                setTimeout(() => holo.classList.remove('ana-speaking'), 3000);
-            }
+            document.head.appendChild(st);
         }
+
+        // Animar el canvas con rayos de discoteca
+        const ctx = canvas.getContext('2d');
+        let frame = 0;
+        const colors = ['#ffd700', '#ff6b6b', '#00d4ff', '#c9a96e', '#ffffff', '#7c4dff', '#4caf50'];
+
+        const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+        resize();
+        window.addEventListener('resize', resize);
+
+        const animate = () => {
+            if (!document.getElementById('discoCanvas')) return; // Parar si se cerró
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const numRays = 18;
+            const speed = frame * 0.025;
+
+            // Fondo suave pulsante
+            const alpha = 0.08 + Math.abs(Math.sin(frame * 0.04)) * 0.12;
+            ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Esfera central brillante
+            const sphereGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 80 + Math.sin(frame * 0.05) * 20);
+            sphereGrad.addColorStop(0, `rgba(255,255,255,${0.7 + Math.sin(frame * 0.1) * 0.3})`);
+            sphereGrad.addColorStop(0.4, colors[frame % colors.length] + 'aa');
+            sphereGrad.addColorStop(1, 'transparent');
+            ctx.beginPath();
+            ctx.arc(cx, cy, 80 + Math.sin(frame * 0.05) * 20, 0, Math.PI * 2);
+            ctx.fillStyle = sphereGrad;
+            ctx.fill();
+
+            // Rayos de luz girando
+            for (let i = 0; i < numRays; i++) {
+                const angle = (i / numRays) * Math.PI * 2 + speed;
+                const len = Math.max(canvas.width, canvas.height) * 1.5;
+                const color = colors[(i + frame) % colors.length];
+                const width = 4 + Math.abs(Math.sin(frame * 0.07 + i)) * 8;
+
+                const grad = ctx.createLinearGradient(cx, cy,
+                    cx + Math.cos(angle) * len,
+                    cy + Math.sin(angle) * len);
+                grad.addColorStop(0, color + 'ff');
+                grad.addColorStop(0.3, color + '66');
+                grad.addColorStop(1, 'transparent');
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + Math.cos(angle) * len, cy + Math.sin(angle) * len);
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = width;
+                ctx.globalAlpha = 0.5 + Math.abs(Math.sin(frame * 0.08 + i * 0.5)) * 0.5;
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+
+            frame++;
+            requestAnimationFrame(animate);
+        };
+        animate();
+
+        // Auto-cerrar después de 45 segundos si el usuario no lo cierra
+        setTimeout(() => {
+            document.getElementById('discoCanvas')?.remove();
+            document.getElementById('discoMsg')?.remove();
+        }, 45000);
     }
 
     playAlarmSound() {
@@ -623,26 +721,18 @@ class AssistantCore {
     playNotteMagica() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const C4 = 261.63, D4 = 293.66, E4 = 329.63,
+                G4 = 392.00, C5 = 523.25, D5 = 587.33, E5 = 659.25, G5 = 783.99;
 
-            // Notas de la melodía principal (frecuencias en Hz, duración en s, pausa antes)
-            // Melodía: Mi-Re-Do-Re-Mi-Mi-Mi | Re-Re-Re | Mi-Sol-Sol | (repite)
-            const C4 = 261.63, D4 = 293.66, E4 = 329.63, F4 = 349.23,
-                G4 = 392.00, A4 = 440.00, B4 = 493.88,
-                C5 = 523.25, D5 = 587.33, E5 = 659.25, G5 = 783.99;
-
-            // [frecuencia, duración, pausa_antes]
             const melody = [
                 [E4, 0.35, 0], [D4, 0.2, 0.38], [C4, 0.4, 0.60],
                 [D4, 0.2, 1.02], [E4, 0.3, 1.24], [E4, 0.3, 1.56], [E4, 0.5, 1.88],
                 [D4, 0.3, 2.42], [D4, 0.3, 2.74], [D4, 0.5, 3.06],
                 [E4, 0.3, 3.60], [G4, 0.3, 3.92], [G4, 0.6, 4.24],
-
                 [E4, 0.35, 4.92], [D4, 0.2, 5.30], [C4, 0.4, 5.52],
                 [D4, 0.2, 5.94], [E4, 0.3, 6.16], [E4, 0.3, 6.48], [E4, 0.3, 6.80],
                 [D4, 0.3, 7.12], [D4, 0.3, 7.44], [E4, 0.2, 7.76], [D4, 0.2, 7.98],
                 [C4, 0.8, 8.20],
-
-                // Segunda parte — más aguda
                 [E5, 0.35, 9.10], [D5, 0.2, 9.48], [C5, 0.4, 9.70],
                 [D5, 0.2, 10.12], [E5, 0.3, 10.34], [E5, 0.3, 10.66], [E5, 0.5, 10.98],
                 [D5, 0.3, 11.52], [D5, 0.3, 11.84], [D5, 0.5, 12.16],
@@ -652,7 +742,6 @@ class AssistantCore {
             melody.forEach(([freq, dur, offset]) => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                // Mezcla de sine + triangle para timbre más cálido, tipo flauta
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, ctx.currentTime + offset);
                 gain.gain.setValueAtTime(0, ctx.currentTime + offset);
