@@ -339,15 +339,23 @@ class AssistantBrain {
             poseToSet = 'presenter';
         }
 
-        else if (input.match(/temporizador|timer|avísame en|avisame en/)) {
-            const minMatch = input.match(/(\d+)/);
+        else if (input.match(/temporizador|timer|atención|avísame|alarma|avisame/)) {
+            // Convertir palabras comunes de tiempo a números
+            let cleanInput = input.replace(/\bun\b|\buno\b|\buna\b/g, '1');
+            const minMatch = cleanInput.match(/(\d+)/);
+
             if (minMatch) {
                 const mins = parseInt(minMatch[1]);
                 this.core.startTimer(mins);
-                response = `Entendido. He configurado un temporizador de ${mins} minutos. Nos vemos en un rato, estaré atenta para avisarte.`;
+                response = `Entendido. He configurado un temporizador de ${mins} minutos. Nos vemos en un minuto, te avisaré con sonido y luz.`;
+                poseToSet = 'happy';
+            } else if (input.includes('minuto')) {
+                // Caso especial "en un minuto" si el regex anterior fallara
+                this.core.startTimer(1);
+                response = "Perfecto, programé la alarma para dentro de un minuto.";
                 poseToSet = 'happy';
             } else {
-                response = "¿De cuántos minutos quieres el temporizador?";
+                response = "¿De cuántos minutos quieres que sea la cuenta regresiva?";
                 poseToSet = 'thinking';
             }
         }
