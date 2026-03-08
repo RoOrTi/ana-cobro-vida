@@ -8,6 +8,10 @@ class AssistantBrain {
         this.core = core;
         this.financialData = null;
         this.loadFinancialData();
+
+        // Control de saludo de sesión única
+        this.sessionGreeted = sessionStorage.getItem('ana_greeted') === 'true';
+
         this.knowledge = {
             greeting: [
                 "¡Hola! Soy Ana, tu asistente virtual inteligente. Estoy aquí para ayudarte con lo que necesites. ¿En qué puedo asistirte hoy?",
@@ -185,9 +189,15 @@ class AssistantBrain {
         let chartData = null;
         let poseToSet = 'idle';
 
-        // --- 1. SALUDOS Y CORTESÍA ---
+        // --- 1. SALUDOS Y CORTESÍA (Sesión Única) ---
         if (input.match(/hola|hi|hey|buenos|buenas|saludos|qué tal/)) {
-            response = this.pick(this.knowledge.greeting);
+            if (this.sessionGreeted) {
+                response = "¡Hola de nuevo! ¿En qué seguimos trabajando?";
+            } else {
+                response = this.pick(this.knowledge.greeting);
+                this.sessionGreeted = true;
+                sessionStorage.setItem('ana_greeted', 'true');
+            }
             poseToSet = 'happy';
         }
         else if (input.match(/adiós|adios|chau|bye|nos vemos|hasta luego/)) {
@@ -270,14 +280,35 @@ class AssistantBrain {
             }
             poseToSet = 'presenter';
         }
-        else if (input.match(/anota|recordar|recuerda|recuérdame|tarea|agregar tarea/)) {
-            const taskText = userInput.replace(/anota|recordar|recuerda|recuérdame|tarea|puedes|agregar|por favor/gi, '').trim();
+        else if (input.match(/anota|recordar|recuerda|recuérdame|tarea|agregar tarea|\d{4}/)) {
+            // Detección de horario militar (ej: 1200)
+            const timeMatch = input.match(/(\d{2})(\d{2})/);
+            let timeInfo = "";
+            let cleanInput = input;
+
+            if (timeMatch && !input.match(/dólar|merval|pts/)) {
+                const hh = timeMatch[1];
+                const mm = timeMatch[2];
+                if (parseInt(hh) < 24 && parseInt(mm) < 60) {
+                    timeInfo = ` para las ${hh}:${mm} horas`;
+                    cleanInput = input.replace(timeMatch[0], '').trim();
+                }
+            }
+
+            const taskText = cleanInput.replace(/anota|recordar|recuerda|recuérdame|tarea|puedes|agregar|por favor/gi, '').trim();
+
             if (taskText && taskText.length > 2) {
-                this.core.addTask(taskText);
-                response = `Perfecto, he anotado "${taskText}" en tu lista de tareas pendientes.`;
+                const finalTask = taskText + timeInfo;
+                this.core.addTask(finalTask);
+                response = `Perfecto, he programado "${taskText}"${timeInfo}. Estará en tu agenda.`;
                 poseToSet = 'happy';
+
+                // Si hay horario, simulamos una 'alarma' visual
+                if (timeInfo) {
+                    console.log(`[Ana] Alarma programada para: ${timeInfo}`);
+                }
             } else {
-                response = "No escuché bien la tarea, ¿qué te gustaría que anotara?";
+                response = "No interpreté bien la tarea, ¿podrías repetirla?";
                 poseToSet = 'thinking';
             }
         }
